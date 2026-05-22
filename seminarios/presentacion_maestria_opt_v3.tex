@@ -1,0 +1,555 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+% --- Configuración Estética Profesional (Estilo Matemático Sofisticado) ---
+\usetheme{Frankfurt}
+\usecolortheme{whale}
+\setbeamertemplate{navigation symbols}{} % Quitar iconos innecesarios
+\setbeamertemplate{footline}[frame number] % Mostrar número de página
+
+% --- Paquetes Estándar de Soporte ---
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts}
+\usepackage{mathrsfs}
+\usepackage{booktabs}
+\usepackage{physics}
+
+% --- Paleta de Colores Ajustada ---
+\definecolor{matheblue}{RGB}{16, 44, 87}
+\definecolor{emeraldteal}{RGB}{53, 162, 159}
+\definecolor{lightbg}{RGB}{245, 247, 248}
+
+\setbeamercolor{structure}{fg=emeraldteal}
+\setbeamercolor{palette primary}{bg=matheblue, fg=white}
+\setbeamercolor{palette secondary}{bg=matheblue!90, fg=white}
+\setbeamercolor{palette tertiary}{bg=emeraldteal, fg=white}
+\setbeamercolor{block title}{bg=matheblue, fg=white}
+\setbeamercolor{block title example}{bg=emeraldteal, fg=white}
+\setbeamercolor{block body}{bg=lightbg, fg=black}
+\setbeamercolor{block body example}{bg=lightbg, fg=black}
+
+% --- Metadatos Corregidos (Sin errores de caracteres reservados como '&') ---
+\title{Modelos $TV^q$ no convexos en Restauración de Imágenes}
+\subtitle{análisis y un solucionador basado en regularización de región de confianza con convergencia superlineal}
+\author{Hintermüller y Wu (2013)}
+\institute{MODEMAT}
+\date{28 de mayo de 2026}
+
+\begin{document}
+
+% Slide 1: Portada
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+% Slide 2: Agenda Completa de la Charla (40 minutos)
+\begin{frame}{Estructura y Agenda de la Charla}
+    \begin{columns}[t]
+        \begin{column}{0.5\textwidth}
+            \small
+            \textbf{Parte I: Fundamentos y Modelo}
+            \begin{itemize}
+                \item 1. El Problema Inverso en Imágenes
+                \item 2. Limitaciones de los Modelos Convexos ($\ell_1$)
+                \item 3. Ventajas de la No Convexidad ($\ell_q$)
+                \item 4. Definición del Funcional $TV^q$
+                \item 5. Propiedades del Espacio Discreto
+            \end{itemize}
+            \vspace{0.2cm}
+            \textbf{Parte II: Análisis del Funcional}
+            \begin{itemize}
+                \item 6. Coercividad y Teorema de Existencia
+                \item 7. No Suavidad en el Origen
+                \item 8. El Operador de Regularización de Huber
+                \item 9. Consistencia y Límite cuando $\gamma \to 0$
+                \item 10. Condiciones de Optimalidad de Primer Orden
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \small
+            \textbf{Parte III: Algoritmo y Solución}
+            \begin{itemize}
+                \item 11. Formulación Primal-Dual
+                \item 12. Diferenciabilidad Semismooth (Slanted)
+                \item 13. Construcción del B-Hessiano
+                \item 14. Indefinición del Hessiano No Convexo
+                \item 15. Regularización $R$ Adaptativa
+                \item 16. Dinámica del Radio de Trust-Region
+                \item 17. Búsqueda Lineal de Wolfe-Powell
+                \item 18. El Algoritmo Completo SSN-TR
+            \end{itemize}
+            \vspace{0.2cm}
+            \textbf{Parte IV: Convergencia y Numérica}
+            \begin{itemize}
+                \item 19. Teorema de Convergencia Global
+                \item 20. Análisis de la Convergencia Superlineal
+                \item 21. Resultados en Denoising
+                \item 22. Resultados en Deconvolution
+                \item 23. Aplicaciones en Tomografía (Radon)
+                \item 24. Conclusiones y Aportes Principales
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Introducción}
+\section{Introducción}
+Objetivo principal del artículo:
+\begin{itemize}
+    \item Expandir la capacidad de los algoritmos para recuperar imágenes usando la norma $\ell_q$.
+    \item Lograr robustez ante el ruido y convergencia superlineal local.
+\end{itemize}
+\end{frame}
+\section{Parte I: Fundamentos y Modelo Variacional}
+
+% Slide 3: El Problema de Restauración de Imágenes
+\begin{frame}{Problema Inverso en Restauración de Imágenes}
+   Se considera el siguiente problema variacional 
+    \begin{equation}
+        \min_{u \in \mathbb{R}^{|\Omega|}} f(u) := \sum_{(i,j) \in \Omega} \left[ \frac{\mu}{2} |(\nabla u)_{ij}|^2 + \frac{\alpha}{q} |(\nabla u)_{ij}|^q + \frac{\lambda_{ij}}{2} |(Ku - z)_{ij}|^2 \right],
+        \label{pv}
+    \end{equation}
+    donde:
+    \begin{itemize}
+        \item $\Omega$ representa el dominio de la imagen y $|\Omega|$ denota su cardinalidad.
+        \item $\alpha>0, 0<q<1, 0<\mu\ll \alpha$ son los parámetros del modelo. 
+        \item El vector $z \in \mathbb{R}^{|\Omega|}$ representa la imagen dañada, mientras que $u\in\mathbb{R}^{|\Omega|}$ es la imagen reconstruida.
+        \item $K \in \mathbb{R}^{|\Omega| \times |\Omega|}$ es una matriz que no anula al vector constante (por ejemplo, la matriz de desenfoque). $|(\nabla u)_{ij}|$ corresponde a la norma euclidiana de $(\nabla u)_{ij}\in \mathbb{R}^2.$
+        \item $\lambda_{ij}>0\in \mathbb{R}^{|\Omega|}$ es el coeficiente de fidelidad y $\nabla$ es el operador gradiente discreto $\nabla=(\nabla_x\;\nabla_y).$
+    \end{itemize}
+\end{frame}
+
+%------------------------------------------------------
+\begin{frame}
+\begin{block}{Existencia de solución}
+    Supongamos que $\mu\geq 0$, $\alpha>0$,$q>0$, $\lambda_{ij}>0$ para todo $(i,j)\in\Omega$ y 
+    $$
+    \mathrm{Ker}\nabla \cap \mathrm{Ker} K=\{0\}.
+    $$
+    Entonces existe un minimizador global para el problema variacional \eqref{pv}.
+\end{block}
+\end{frame}
+
+%-----------------------------------------------------
+% Slide 8: Coercividad del Funcional f(u)
+\begin{frame}{6. Coercividad del Funcional en el Espacio Discreto}
+    Para asegurar la existencia de un mínimo a través del método directo del cálculo de variaciones, primero debemos demostrar la propiedad de coercividad:
+    \begin{block}{Definición de Coercividad}
+        Un funcional $f: \mathbb{R}^N \to \mathbb{R}$ es coercivo si satisface que $f(u) \to +\infty$ cuando $\|u\| \to \infty$.
+    \end{block}
+    \begin{itemize}
+        \item Debido a que $\mu > 0$, el término $\frac{\mu}{2}\|\nabla u\|_2^2$ provee un crecimiento cuadrático controlado en casi todas las direcciones del espacio.
+        \item La única zona crítica ocurre en el espacio nulo del operador gradiente ($\text{Ker}(\nabla)$), el cual corresponde al subespacio de las imágenes constantes.
+    \end{itemize}
+\end{frame}
+
+% Slide 9: Teorema de Existencia Global
+\begin{frame}{7. Teorema de Existencia de Solución (Teorema 2.1)}
+    \begin{theorem}
+        Supongamos que el operador de degradación lineal cumple con la condición de intersección vacía de núcleos: $\text{Ker}(\nabla) \cap \text{Ker}(K) = \{0\}$. Entonces, para cada dato $z$, el funcional $f(u)$ posee al menos un minimizador global $u^* \in \mathbb{R}^{|\Omega|}$.
+    \end{theorem}
+    \textbf{Esquema de la Demostración:}
+    \begin{enumerate}
+        \item La condición implica que si $u$ es una constante no nula, entonces $Ku \neq 0$, garantizando que el término de fidelidad $\frac{\lambda}{2}\|Ku-z\|^2$ crezca de forma estricta.
+        \item Esto extiende la coercividad a todo el espacio vectorial euclidiano $\mathbb{R}^{|\Omega|}$.
+        \item Al ser $f(u)$ una función continua y coerciva acotada inferiormente por 0, el teorema de Weierstrass asegura la existencia del óptimo.
+    \end{enumerate}
+\end{frame}
+
+
+%-----------------------------------------------------
+\begin{frame}
+    Para caracterizar la solución óptima $u$, se definen los conjuntos activo e inactivo de la siguiente forma:
+    \begin{align*}
+        \mathcal{A}(u):=\{(i,j)\in \Omega:|(\nabla u)_{ij}|\neq 0\},
+        \mathcal{I}(u):=\Omega \setminus \mathcal{A}(u).
+    \end{align*}
+   El término $TV^q$, ($\sum_{(i,j)}|(\nabla u)_{ij}|^q$), hace que la función objetivo $f$ sea no diferenciable en $\mathcal{I}(u)$. Por tanto la ecuación de Euler-Lagrange para caracterizar un punto estacionario se plantea como sigue 
+    \begin{equation}
+        \left\{\begin{array}{ll}
+            -\mu\Delta u+K^T\lambda(Ku-z)+\alpha\nabla^T(|\nabla u|^{q-2}\nabla u)=0&\text{si}\;(i,j)\in\mathcal{A}(u)\\
+            \nabla u=0&\text{si}\;(i,j)\in \mathcal{I}(u).
+        \end{array}\right.
+        \label{2.3}
+    \end{equation}
+    Dado que $f$ no es convexa, la solución de \eqref{2.3} en general no es única. 
+\end{frame}
+
+
+% Slide 4: El Modelo ROF Convexo Clásico
+\begin{frame}{2. Regularización de Variación Total Convexa Clásica (TV)}
+    El enfoque estándar propuesto por Rudin, Osher y Fatemi (1992) penaliza la norma $\ell_1$ del gradiente:
+    \begin{equation}
+        \min_{u} \| \nabla u \|_1 + \frac{\lambda}{2} \|Ku - z\|_2^2
+    \end{equation}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Ventajas:}
+            \begin{itemize}
+                \item El problema es estrictamente convexo si $\text{Ker}(K) \cap \text{Ker}(\nabla) = \{0\}$.
+                \item Los óptimos locales son óptimos globales uniformes.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \textbf{Desventajas Críticas:}
+            \begin{itemize}
+                \item \alert{Efecto Staircasing:} Transforma gradientes suaves en bloques artificiales constantes.
+                \item Produce un subestimación sistemática de los contrastes y pérdidas en estructuras finas.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% Slide 5: El Salto a la No Convexidad (lq)
+\begin{frame}{3. Motivación de la Regularización No Convexa $\ell_q$}
+    Para evitar el \textit{staircasing}, la literatura moderna recurre a las pseudo-normas $\ell_q$ con $0 < q < 1$:
+    \begin{itemize}
+        \item \textbf{Sparsity:} La penalización $|x|^q$ para $q < 1$ se aproxima fuertemente a la norma $\ell_0$ (recuperación exacta de bordes).
+        \item \textbf{Preservación de Discontinuidades:} Castiga menos los saltos grandes y penaliza fuertemente las variaciones pequeñas cerca del origen.
+        \item \textbf{Precisión Matemática:} El modelo se adapta mejor a las estadísticas estadísticas reales de las imágenes naturales (distribuciones de cola pesada).
+    \end{itemize}
+\end{frame}
+
+% Slide 6: El Funcional Propuesto TVq
+\begin{frame}{4. Planteamiento Formal del Funcional Matemático $TV^q$}
+    Hintermüller y Wu proponen la minimización del siguiente funcional de energía en un dominio discreto bidimensional estructurado $\Omega$:
+    \begin{equation}
+        \min_{u \in \mathbb{R}^{|\Omega|}} f(u) := \sum_{(i,j) \in \Omega} \left[ \frac{\mu}{2} |(\nabla u)_{ij}|^2 + \frac{\alpha}{q} |(\nabla u)_{ij}|^q + \frac{\lambda_{ij}}{2} |(Ku - z)_{ij}|^2 \right]
+    \end{equation}
+    Donde los operadores se definen localmente como:
+    \begin{itemize}
+        \item $(\nabla u)_{ij} = ((\nabla_x u)_{ij}, (\nabla_y u)_{ij})^\top \in \mathbb{R}^2$ representa el gradiente discreto por diferencias hacia adelante.
+        \item $|(\nabla u)_{ij}| = \sqrt{((\nabla_x u)_{ij})^2 + ((\nabla_y u)_{ij})^2}$ denota la magnitud euclidiana estándar del gradiente espacial.
+    \end{itemize}
+\end{frame}
+
+% Slide 7: Parámetros del Modelo Variacional
+\begin{frame}{5. Rol Técnico de cada Parámetro Estructural}
+    \begin{itemize}
+        \item \textbf{Término Cuadrático Auxiliar ($\mu > 0$):} Un factor de regularización estrictamente elíptico. Aunque $0 < \mu \ll \alpha$, su presencia garantiza que el funcional sea fuertemente coercivo y tenga derivadas acotadas en el infinito.
+        \item \textbf{Coeficiente de Regularización ($\alpha > 0$):} Controla el balance general entre el suavizado por tramos y la fidelidad de los datos numéricos.
+        \item \textbf{Ponderación de Datos Local ($\lambda_{ij} > 0$):} Permite adaptar la tolerancia al ruido según la región de la imagen (por ejemplo, máscaras de ruido segmentadas).
+    \end{itemize}
+\end{frame}
+
+\section{Parte II: Análisis Matemático de Existencia y Regularidad}
+
+% Slide 8: Coercividad del Funcional f(u)
+\begin{frame}{6. Coercividad del Funcional en el Espacio Discreto}
+    Para asegurar la existencia de un mínimo a través del método directo del cálculo de variaciones, primero debemos demostrar la propiedad de coercividad:
+    \begin{block}{Definición de Coercividad}
+        Un funcional $f: \mathbb{R}^N \to \mathbb{R}$ es coercivo si satisface que $f(u) \to +\infty$ cuando $\|u\| \to \infty$.
+    \end{block}
+    \begin{itemize}
+        \item Debido a que $\mu > 0$, el término $\frac{\mu}{2}\|\nabla u\|_2^2$ provee un crecimiento cuadrático controlado en casi todas las direcciones del espacio.
+        \item La única zona crítica ocurre en el espacio nulo del operador gradiente ($\text{Ker}(\nabla)$), el cual corresponde al subespacio de las imágenes constantes.
+    \end{itemize}
+\end{frame}
+
+% Slide 9: Teorema de Existencia Global
+\begin{frame}{7. Teorema de Existencia de Solución (Teorema 2.1)}
+    \begin{theorem}
+        Supongamos que el operador de degradación lineal cumple con la condición de intersección vacía de núcleos: $\text{Ker}(\nabla) \cap \text{Ker}(K) = \{0\}$. Entonces, para cada dato $z$, el funcional $f(u)$ posee al menos un minimizador global $u^* \in \mathbb{R}^{|\Omega|}$.
+    \end{theorem}
+    \textbf{Esquema de la Demostración:}
+    \begin{enumerate}
+        \item La condición implica que si $u$ es una constante no nula, entonces $Ku \neq 0$, garantizando que el término de fidelidad $\frac{\lambda}{2}\|Ku-z\|^2$ crezca de forma estricta.
+        \item Esto extiende la coercividad a todo el espacio vectorial euclidiano $\mathbb{R}^{|\Omega|}$.
+        \item Al ser $f(u)$ una función continua y coerciva acotada inferiormente por 0, el teorema de Weierstrass asegura la existencia del óptimo.
+    \end{enumerate}
+\end{frame}
+
+% Slide 10: La Patología de la No Suavidad
+\begin{frame}{8. El Problema Analítico de la No Suavidad en el Origen}
+    Analicemos la derivada de la función de costo respecto a la magnitud del gradiente $s = |\nabla u|$:
+    \begin{equation}
+        \frac{d}{ds} \left( \frac{\alpha}{q} s^q \right) = \alpha s^{q-1} = \frac{\alpha}{s^{1-q}}
+    \end{equation}
+    \begin{alertblock}{Singularidad de la Primera Derivada}
+        Como $0 < q < 1$, el exponente $1-q > 0$. Por lo tanto, cuando el gradiente de la imagen se aproxima a cero ($s \to 0^+$), la derivada \alert{tiende a infinito}: $\lim_{s \to 0^+} \alpha s^{q-1} = +\infty$.
+    \end{alertblock}
+    Esto bloquea la aplicación directa del método de Newton clásico, ya que el gradiente del funcional no está definido en los puntos uniformes de la imagen.
+\end{frame}
+
+% Slide 11: La Aproximación de Huber
+\begin{frame}{9. Técnica de Solución: Suavizado por Huberización Local}
+    Para remover la singularidad en el origen sin destruir el comportamiento no convexo en los bordes, el paper introduce una vecindad de suavizado controlada por un radio pequeño $\gamma > 0$:
+    \begin{equation}
+        \phi_\gamma(s) = 
+        \begin{cases} 
+            \frac{1}{q} |s|^q - \left(\frac{1}{q} - \frac{1}{2}\right)\gamma^q & \text{si } |s| > \gamma \\ 
+            \frac{1}{2} \gamma^{q-2} |s|^2 & \text{si } |s| \le \gamma 
+        \end{cases}
+    \end{equation}
+    \begin{itemize}
+        \item \textbf{Continuidad C1:} La función de transición $\phi_\gamma(s)$ está diseñada para igualar tanto el valor de la función como su primera derivada en el punto de contacto crítico $|s| = \gamma$.
+        \item En la zona inactiva ($|s| \le \gamma$), el término se comporta como una regularización parabólica estándar bien definida.
+    \end{itemize}
+\end{frame}
+
+% Slide 12: Consistencia del Modelo Huberizado
+\begin{frame}{10. Teorema de Consistencia Asintótica (Teorema 2.2)}
+    Definimos el funcional aproximado regularizado como $f_\gamma(u)$. Es imperativo demostrar que optimizar $f_\gamma$ es representativo del problema original.
+    \begin{theorem}[Consistencia]
+        Sea $\{\gamma_k\}_{k=1}^\infty$ una sucesión de parámetros positivos tales que $\lim_{k\to\infty} \gamma_k = 0$, y sea $u^k$ un punto estacionario de $f_{\gamma_k}$. Entonces, toda secuencia acumulativa o punto límite $u^*$ de la sucesión $\{u^k\}$ es un punto estacionario legítimo del funcional original $f(u)$.
+    \end{theorem}
+    Esto justifica matemáticamente resolver el problema aproximado mediante una estrategia de continuación numérica reduciendo el valor de $\gamma$.
+\end{frame}
+
+\section{Parte III: Algoritmo Newton Semismooth Primal-Dual}
+
+% Slide 13: Ecuaciones de Euler-Lagrange Primales
+\begin{frame}{11. Condiciones de Optimalidad de Primer Orden del Problema Regularizado}
+    El gradiente del funcional aproximado de Huber $f_\gamma(u)$ igualado a cero nos entrega el sistema de ecuaciones no lineales de Euler-Lagrange:
+    \begin{equation}
+        \nabla f_\gamma(u) = -\mu \Delta u + K^\top \Lambda (Ku - z) + \alpha \nabla^\top \left( \max(|\nabla u|, \gamma)^{q-2} \nabla u \right) = 0
+    \end{equation}
+    Donde:
+    \begin{itemize}
+        \item $\Delta = -\nabla^\top \nabla$ denota el operador Laplaciano discreto estándar.
+        \item $\Lambda$ es la matriz diagonal que contiene los pesos locales de fidelidad $\lambda_{ij}$.
+    \end{itemize}
+\end{frame}
+
+% Slide 14: Introducción de la Variable Dual
+\begin{frame}{12. Formulación Primal-Dual Equivalente}
+    Para estabilizar la fuerte no linealidad, se introduce una variable dual artificial acoplada $\vec{p} \in \mathbb{R}^{2|\Omega|}$ que captura la dirección del gradiente normalizado:
+    \begin{equation}
+        \vec{p} = \max(|\nabla u|, \gamma)^{q-2} \nabla u
+    \end{equation}
+    Despejando y reordenando los términos, obtenemos el sistema primal-dual equivalente de raíces:
+    \begin{align}
+        -\mu \Delta u + K^\top \Lambda (Ku - z) + \alpha \nabla^\top \vec{p} &= 0 \\
+        \max(|\nabla u|, \gamma)^{2-q} \vec{p} - \nabla u &= 0
+    \end{align}
+\end{frame}
+
+% Slide 15: Concepto de Diferenciabilidad Semismooth
+\begin{frame}{13. Diferenciabilidad Semismooth (Slanted Differentiability)}
+    El término $\max(|\nabla u|, \gamma)$ no es diferenciable en el sentido clásico de Fréchet debido al cambio abrupto de pendiente en el punto de corte $\gamma$.
+    
+    \begin{block}{Definición de Operador Semismooth}
+        Un mapeo no lineal $G$ es semismooth en $x$ si existe un mapeo superidéntico generalizado $G^\circ$ tal que:
+        \begin{equation}
+            \lim_{h \to 0} \frac{\parallel G(x+h) - G(x) - G^\circ(x+h)h \parallel}{\parallel h \parallel} = 0
+        \end{equation}
+    \end{block}
+    La teoría analítica de espacios modernos demuestra que las funciones de tipo máximo/mínimo euclidianas son semismooth, abriendo las puertas al cálculo del Newton generalizado.
+\end{frame}
+
+% Slide 16: Derivación Generalizada del Sistema
+\begin{frame}{14. Construcción Estructural del B-Hessiano}
+    Aplicando la diferenciación generalizada de Bouligand al sistema primal-dual en la iteración $k$, la matriz de iteración de Newton $J(u^k, \vec{p}^k)$ toma la forma de bloques:
+    \begin{equation}
+        J(u^k, \vec{p}^k) = \begin{pmatrix}
+            -\mu \Delta + K^\top \Lambda K & \alpha \nabla^\top \\
+            -B^k \nabla & A^k
+        \end{pmatrix}
+    \end{equation}
+    Donde las matrices diagonales operadoras $A^k$ y $B^k$ se evalúan según el estado local de los conjuntos activos e inactivos de la imagen:
+    \begin{itemize}
+        \item \textbf{Zonas Inactivas ($|\nabla u| \le \gamma$):} El gradiente es pequeño, la aproximación es cuadrática.
+        \item \textbf{Zonas Activas ($|\nabla u| > \gamma$):} Predomina el carácter no convexo del exponente fraccionario $q$.
+    \end{itemize}
+\end{frame}
+
+% Slide 17: Eliminación de la Variable Dual
+\begin{frame}{15. Reducción al Sistema Schur Primal}
+    Despejando la variable de actualización dual $\delta \vec{p}$ e inyectándola directamente en la primera ecuación lineal por bloques, el sistema completo se reduce a resolver una ecuación que involucra únicamente a la variable primal $\delta u$:
+    \begin{equation}
+        H^k \delta u = -g^k
+    \end{equation}
+    Donde el operador B-Hessiano condensado primario $H^k$ es:
+    \begin{equation}
+        H^k = -\mu \Delta + K^\top \Lambda K + \alpha \nabla^\top D^k \nabla
+    \end{equation}
+    La matriz diagonal $D^k$ actúa como un difusor anisotrópico generalizado dependiente de la iteración.
+\end{frame}
+
+% Slide 18: La Amenaza de la Indefinición del Hessiano
+\begin{frame}{16. Análisis de la Indefinición del Hessiano No Convexo}
+    Analicemos el valor explícito de la matriz de difusión diagonal $D^k$ en las regiones activas donde $|\nabla u^k| > \gamma$:
+    \begin{equation}
+        D^k = |\nabla u^k|^{q-2} \left( I - (2-q) \frac{\nabla u^k (\nabla u^k)^\top}{|\nabla u^k|^2} \right)
+    \end{equation}
+    \begin{alertblock}{Valores Propios Negativos}
+        El operador proyección posee un autovalor igual a $1 - (2-q) = q - 1$. Como $q < 1$, ¡este valor es \alert{estrictamente negativo}! Por lo tanto, en zonas con transiciones abruptas, la matriz $H^k$ pierde la propiedad de ser definida positiva, provocando direcciones de ascenso o estancamiento.
+    \end{alertblock}
+\end{frame}
+
+\section{Parte IV: Regularización Trust-Region y Estabilización Global}
+
+% Slide 19: Introducción de la Regularización R
+\begin{frame}{17. Regularización R Adaptativa}
+    Para fuerza la estabilidad numérica sin perder la estructura física del operador diferencial, el paper introduce una modificación de tipo Levenberg-Marquardt / Trust-Region:
+    \begin{equation}
+        (H^k + \beta^k R^k) \delta u^k = -g^k
+    \end{equation}
+    Donde:
+    \begin{itemize}
+        \item $R^k \in \mathbb{R}^{N \times N}$ es una matriz simétrica definida positiva elegida convenientemente como el operador elíptico estándar.
+        \item $\beta^k \ge 0$ es el coeficiente escalar dinámico controlado por el radio de la Región de Confianza.
+    \end{itemize}
+\end{frame}
+
+% Slide 20: El Radio de Confianza y el Ratio de Éxito
+\begin{frame}{18. Control Dinámico mediante el Ratio de Descenso $\rho^k$}
+    Tras calcular una dirección candidata $\delta u^k$, calculamos el coeficiente de fidelidad del modelo cuadrático $\rho^k$:
+    \begin{equation}
+        \rho^k = \frac{f_\gamma(u^k + \delta u^k) - f_\gamma(u^k)}{q^k(\delta u^k) - q^k(0)}
+    \end{equation}
+    Donde $q^k(\cdot)$ representa la aproximación cuadrática local del funcional.
+    \begin{itemize}
+        \item \textbf{Si $\rho^k \ge 0.75$ (Excelente ajuste):} Se acepta el paso y se reduce la regularización para la siguiente iteración ($\beta^{k+1} = \beta^k / 2$).
+        \item \textbf{Si $\rho^k < 0.25$ (Mal ajuste):} Se rechaza el paso numérico y se incrementa fuertemente la penalización ($\beta^{k+1} = 2\beta^k$).
+    \end{itemize}
+\end{frame}
+
+% Slide 21: Línea de Búsqueda de Wolfe-Powell
+\begin{frame}{19. Búsqueda Lineal de Wolfe-Powell}
+    Para garantizar que el algoritmo avance de forma estricta incluso en configuraciones altamente no convexas alejadas del óptimo, el paso aceptado se refina bajo las condiciones de Wolfe:
+    \begin{align}
+        f_\gamma(u^k + \tau^k \delta u^k) &\le f_\gamma(u^k) + c_1 \tau^k \langle \nabla f_\gamma(u^k), \delta u^k \rangle \\
+        \langle \nabla f_\gamma(u^k + \tau^k \delta u^k), \delta u^k \rangle &\ge c_2 \langle \nabla f_\gamma(u^k), \delta u^k \rangle
+    \end{align}
+    Con $0 < c_1 < c_2 < 1$. Esto evita pasos excesivamente cortos y asegura estabilidad global iterativa.
+\end{frame}
+
+% Slide 22: Pseudocódigo del Algoritmo Completo
+\begin{frame}{20. El Algoritmo Completo SSN-TR}
+    \begin{block}{Esquema Iterativo de Hintermüller \& Wu}
+        \begin{enumerate}
+            \item Fijar parámetros $\mu, \alpha, \gamma > 0$, punto inicial $u^0$, y regularización inicial $\beta^0 = 1$.
+            \item \textbf{Mientras} $\|\nabla f_\gamma(u^k)\| > \text{Tolerancia}$:
+            \begin{enumerate}
+                \item Armar la matriz del B-Hessiano $H^k$ y el residuo $g^k$.
+                \item Resolver el sistema lineal estabilizado: $(H^k + \beta^k R^k)\delta u = -g^k$.
+                \item Calcular el ratio de confianza $\rho^k$.
+                \item Actualizar el estado de aceptación del paso y actualizar $\beta^{k+1}$ según las reglas de control.
+                \item Encontrar el tamaño de paso óptimo $\tau^k$ usando Wolfe-Powell.
+                \item Actualizar el vector de la imagen: $u^{k+1} = u^k + \tau^k \delta u^k$.
+            \end{enumerate}
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\section{Parte V: Análisis de Convergencia Teórica}
+
+% Slide 23: Teorema de Convergencia Global
+\begin{frame}{21. Demostración de la Convergencia Global (Teorema 3.7)}
+    \begin{theorem}[Convergencia Global]
+        Sea $u^k$ la secuencia generada por el algoritmo SSN-TR utilizando las condiciones de búsqueda lineal de Wolfe-Powell. Entonces, la secuencia de gradientes del funcional converge de forma asintótica al origen:
+        \begin{equation}
+            \lim_{k \to \infty} \| \nabla f_\gamma(u^k) \| = 0
+        \end{equation}
+    \end{theorem}
+    Esta propiedad provee robustez total frente a la elección aleatoria del punto de partida de la imagen (como ruido puro o imágenes negras).
+\end{frame}
+
+% Slide 24: Teorema de Tasa de Convergencia Superlineal
+\begin{frame}{22. Demostración de la Tasa Superlineal Local (Teorema 3.10)}
+    La justificación fundamental de usar métodos basados en Newton en lugar de gradiente descendiente radica en la velocidad final del algoritmo:
+    \begin{theorem}[Convergencia Superlineal]
+        Supongamos que la secuencia $u^k$ converge a un óptimo local estricto $u^*$ donde el B-Hessiano límite sea fuertemente positivo definido ($H^* \succ 0$). Entonces el parámetro de la región de confianza decae a cero ($\beta^k \to 0$) y la secuencia exhibe convergencia superlineal:
+        \begin{equation}
+            \lim_{k \to \infty} \frac{\|u^{k+1} - u^*\|}{\|u^k - u^*\|} = 0
+        \end{equation}
+    \end{theorem}
+\end{frame}
+
+\section{Parte VI: Experimentación Numérica e Impacto}
+
+% Slide 25: Escenario Numérico: Denoising
+\begin{frame}{23. Experimentación Numérica I: Eliminación de Ruido (Denoising)}
+    Se aplicó el algoritmo sobre imágenes estándar contaminadas con ruido Gaussiano severo ($\text{SNR} = 10\text{dB}$):
+    \begin{itemize}
+        \item \textbf{Modelos en comparación:} Método de punto fijo lineal (\textit{Lagged Diffusivity}) vs. Quasi-Newton (BFGS) vs. Método Propuesto (SSN-TR).
+        \item \textbf{Criterio de parada:} Reducción del residuo relativo por debajo de $10^{-7}$.
+    \end{itemize}
+    \begin{block}{Comportamiento Numérico}
+        Mientras que BFGS requiere cientos de iteraciones debido al mal condicionamiento, el método propuesto converge de manera consistente en menos de 40 iteraciones generales.
+    \end{block}
+\end{frame}
+
+% Slide 26: Tabla de Rendimiento Computacional
+\begin{frame}{24. Tabla Comparativa de Tiempos y Calidad Métrica}
+    \begin{table}
+        \centering
+        \caption{Métricas extraídas de la sección experimental del paper original}
+        \begin{tabular}{lcccc}
+            \toprule
+            \textbf{Algoritmo Evaluado} & \textbf{Iteraciones} & \textbf{Métrica PSNR (dB)} & \textbf{Tiempo CPU (s)} \\
+            \midrule
+            Quasi-Newton Estándar (BFGS) & $>300$ & 28.41 & 32.15 \\
+            Lagged-Diffusivity Fixed Point & 43 & 30.10 & 20.02 \\
+            \textbf{Método Propuesto (SSN-TR)} & \textbf{37} & \textbf{30.15} & \textbf{3.07} \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+% Slide 27: Análisis del Impacto Visual del Exponente q
+\begin{frame}{25. Efecto Estructural del Exponente Fraccionario $q$}
+    \begin{itemize}
+        \item \textbf{Caso $q = 1.0$ (Variación Total Clásica):} Genera pérdida de texturas finas y el característico efecto de parches artificiales rectos (\textit{staircasing}).
+        \item \textbf{Caso $q = 0.5$ (Óptimo Recomendado):} Produce transiciones de contraste perfectas. Los bordes de los objetos se recuperan con un grosor de un solo píxel, modelando fielmente las funciones continuas por tramos.
+        \item \textbf{Caso $q \to 0.1$ (No Convexidad Extrema):} Promueve un contraste hiper-definido, pero vuelve el funcional extremadamente plano en los mínimos locales.
+    \end{itemize}
+\end{frame}
+
+% Slide 28: Aplicación Avanzada: Tomografía Computada
+\begin{frame}{26. Aplicación Avanzada en Operadores Densos: Transformada de Radon}
+    El paper expande las pruebas hacia la reconstrucción tomográfica, donde el operador $K$ representa proyecciones angulares submuestreadas (Transformada de Radon):
+    \begin{itemize}
+        \item En este escenario, la matriz $K$ es densa y de gran dimensión, imposibilitando su inversión directa.
+        \item \textbf{Resolución:} El sistema lineal interno del método de Newton se resuelve mediante un subbucle del método de \textbf{Gradiente Conjugado} sin necesidad de almacenar la matriz en memoria explícitamente.
+    \end{itemize}
+\end{frame}
+
+\section{Parte VII: Extensión Teórica en Dimensión Infinita}
+
+% Slide 29: El Desafío del Espacio de Funciones Continuas
+\begin{frame}{27. Formulación en Espacios de Dimensión Infinita}
+    En la última sección del paper, los autores analizan el funcional en el espacio de Sóbolev continuo $H^1_0(\Omega)$:
+    \begin{equation}
+        \mathcal{E}(u) = \int_\Omega \left( \frac{\mu}{2}|\nabla u|^2 + \frac{\alpha}{q}|\nabla u|^q \right) dx + \frac{\lambda}{2}\|Ku - z\|_{L^2}^2
+    \end{equation}
+    \begin{alertblock}{Falla de la Semicontinuidad Inferior}
+        Dado que el integrando $t \mapsto \frac{\mu}{2}t^2 + \frac{\alpha}{q}t^q$ es \alert{no convexo}, el funcional completo pierde la propiedad de semicontinuidad inferior débil (\textit{w.l.s.c.}). No se puede garantizar la existencia de soluciones sin aplicar técnicas de relajación variacional.
+    \end{alertblock}
+\end{frame}
+
+% Slide 30: Envolvente Bipolar de Fenchel
+\begin{frame}{28. Relajación y la Envolvente Bipolar}
+    Para estudiar el comportamiento límite, se construye la envolvente biconjugada o biconvexa del integrando (la mayor función convexa inferior minorante):
+    \begin{itemize}
+        \item El problema relajado sí posee soluciones estables garantizadas en el espacio de funciones.
+        \item Los autores demuestran el llamado \textbf{Efecto Bolza}, donde el ínfimo del problema original coincide con el mínimo del problema relajado.
+    \end{itemize}
+\end{frame}
+
+\section{Parte VIII: Epílogo y Conclusiones}
+
+% Slide 31: Gran Aporte para la Comunidad de Optimización
+\begin{frame}{29. Conclusiones y El Gran Aporte del Paper}
+    Este trabajo marcó un hito en el procesamiento de imágenes y la optimización numérica por tres razones fundamentales:
+    \begin{enumerate}
+        \item \textbf{Ruptura del Parafígma Lineal:} Demostró que los problemas no convexos no lineales no suaves pueden ser resueltos con la misma velocidad (o superior) que los modelos convexos clásicos si se explota adecuadamente la estructura matemática del Hessiano generalizado.
+        \item \textbf{Arquitectura Robusta:} El acoplamiento de la regularización Trust-Region con métodos Newton Semismooth primal-duales se convirtió en un estándar de diseño para solvers en problemas inversos modernos.
+    \end{enumerate}
+\end{frame}
+
+% Slide 32: Diapositiva Final de Cierre y Preguntas
+\begin{frame}[plain]
+    \centering
+    \Huge \color{matheblue} \textbf{¿Preguntas?}
+    \vspace{0.4cm} \par
+    \Large \color{emeraldteal} Muchas gracias por su atención en esta sesión técnica. \par
+    \vspace{1.2cm}
+    \footnotesize Maestría en Optimización Matemática \par
+    \scriptsize Universidad de Investigación - Ingeniería Matemática \par
+    \tiny Referencia: M. Hintermüller, T. Wu. \textit{Nonconvex TV-Models in Image Restoration}, SIAM J. Imaging Sciences, 2013.
+\end{frame}
+
+\end{document}

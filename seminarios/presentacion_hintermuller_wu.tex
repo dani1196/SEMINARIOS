@@ -1,0 +1,271 @@
+\documentclass[10pt, aspectratio=169, xcolor={dvipsnames}]{beamer}
+\usetheme{Metropolis} % Un tema limpio y moderno, muy usado en academia
+
+% --- Paquetes ---
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath, amssymb, amsthm, physics, booktabs, mathrsfs}
+
+% --- Colores Personalizados ---
+\definecolor{primary}{RGB}{0, 64, 128}
+\setbeamercolor{structure}{fg=primary}
+\setbeamercolor{progress bar}{fg=Maroon}
+
+% --- Info ---
+\title{Análisis de Modelos TV No Convexos y Solvers de Convergencia Superlineal}
+\subtitle{Hintermüller \& Wu (2013) - SIAM J. Imaging Sciences}
+\author{Maestría en Optimización Matemática}
+\date{\today}
+
+\begin{document}
+
+% 1. Portada
+\maketitle
+
+% 2. Tabla de Contenidos
+\begin{frame}{Estructura de la Sesión}
+    \tableofcontents
+\end{frame}
+
+\section{Introducción y Motivación}
+
+% 3. El Problema de Restauración
+\begin{frame}{Restauración de Imágenes e Inversa}
+    \begin{itemize}
+        \item Objetivo: Recuperar una imagen original $u$ de datos ruidosos $z = Ku + \eta$.
+        \item Tradicionalmente se usa \textbf{Variación Total (TV)} con norma $\ell_1$:
+        \[ \min \int |\nabla u| + \frac{\lambda}{2} \|Ku - z\|^2 \]
+        \item Limitación de $\ell_1$: Efecto \textit{staircasing} y pérdida de bordes finos.
+    \end{itemize}
+\end{frame}
+
+% 4. Motivación de la No Convexidad
+\begin{frame}{¿Por qué $l_q$ con $0 < q < 1$?}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{itemize}
+                \item La norma $\ell_0$ es ideal para \textit{sparsity} pero es NP-Hard.
+                \item La norma $\ell_q$ es una aproximación más cercana a $\ell_0$ que $\ell_1$.
+                \item Ventajas:
+                \begin{itemize}
+                    \item Promueve mayor dispersión del gradiente.
+                    \item Requiere menos mediciones (\textit{Compressed Sensing}).
+                    \item Preserva mejor las discontinuidades (bordes).
+                \end{itemize}
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{block}{No Convexidad}
+                El precio a pagar es un problema de optimización globalmente no convexo y no suave.
+            \end{block}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\section{El Modelo Variacional TVq}
+
+% 5. Formulación Discreta
+\begin{frame}{Planteamiento del Modelo Discreto}
+    Consideramos $\Omega$ como el dominio de píxeles. El funcional a minimizar es:
+    \begin{equation}
+        \min_{u \in \mathbb{R}^{|\Omega|}} f(u) := \sum_{(i,j) \in \Omega} \left( \frac{\mu}{2} |(\nabla u)_{ij}|^2 + \frac{\alpha}{q} |(\nabla u)_{ij}|^q + \frac{\lambda_{ij}}{2} |(Ku - z)_{ij}|^2 \right)
+    \end{equation}
+    Donde:
+    \begin{itemize}
+        \item $\mu > 0$ es pequeño (regularización de Tikhonov interna).
+        \item $K$ es el operador de degradación (no aniquila constantes).
+        \item $\lambda_{ij} > 0$ son pesos de fidelidad local.
+    \end{itemize}
+\end{frame}
+
+% 6. Teorema de Existencia
+\begin{frame}{Existencia de Solución (Teorema 2.1)}
+    \begin{block}{Hipótesis}
+        $\text{Ker}(\nabla) \cap \text{Ker}(K) = \{0\}$.
+    \end{block}
+    \begin{itemize}
+        \item \textbf{Prueba:} El funcional $f(u)$ es continuo y coercivo.
+        \item La coercividad se demuestra por contradicción asumiendo una secuencia $\|u^k\| \to \infty$ con energía acotada.
+        \item La compacidad en el espacio discreto $\mathbb{R}^{|\Omega|}$ asegura la existencia de un minimizador global.
+    \end{itemize}
+\end{frame}
+
+\section{Regularización y Huberización}
+
+% 7. Problema de la No Suavidad
+\begin{frame}{No Suavidad y Ecuaciones de Euler-Lagrange}
+    El término $|\nabla u|^q$ no es diferenciable en $\nabla u = 0$ para $q < 1$.
+    Las condiciones de optimalidad se dividen en:
+    \begin{itemize}
+        \item \textbf{Set Activo ($\mathcal{A}$):} $\nabla u \neq 0$.
+        \item \textbf{Set Inactivo ($\mathcal{I}$):} $\nabla u = 0$.
+    \end{itemize}
+    \[ -\mu\Delta u + K^\top \lambda(Ku - z) + \alpha \nabla^\top (|\nabla u|^{q-2}\nabla u) = 0 \text{ en } \mathcal{A} \]
+\end{frame}
+
+% 8. Suavizado de Huber
+\begin{frame}{Huberización Local}
+    Se define el funcional suavizado $f_\gamma(u)$ mediante la función $\phi_\gamma(s)$:
+    \[ \phi_\gamma(|s|) = \begin{cases} \frac{1}{q}|s|^q - C_\gamma & |s| > \gamma \\ \frac{1}{2}\gamma^{q-2}|s|^2 & |s| \le \gamma \end{cases} \]
+    \begin{itemize}
+        \item $f_\gamma$ es $\mathcal{C}^1$ y su gradiente es localmente Lipschitz.
+        \item \textbf{Consistencia (Teorema 2.2):} Cuando $\gamma \to 0$, los puntos estacionarios de $f_\gamma$ convergen a puntos estacionarios del problema original.
+    \end{itemize}
+\end{frame}
+
+\section{El Solver: Newton Semismooth Primal-Dual}
+
+% 9. Reformulación Primal-Dual
+\begin{frame}{Sistema Primal-Dual}
+    Introducimos la variable dual $\vec{p}$ para linealizar el término de difusión:
+    \begin{align}
+        -\mu\Delta u + K^\top \lambda(Ku - z) + \alpha \nabla^\top \vec{p} &= 0 \\
+        \max(|\nabla u|, \gamma)^{2-q} \vec{p} - \nabla u &= 0
+    \end{align}
+    Este sistema es semismooth debido al operador $\max$. Podemos aplicar un método de Newton generalizado.
+\end{frame}
+
+% 10. El B-Hessiano
+\begin{frame}{Matriz del Sistema (B-Hessian)}
+    La derivada de Bouligand (B-differential) del sistema lleva a una matriz de Newton $H^k$:
+    \[ H^k = -\mu\Delta + K^\top \lambda K + \alpha \nabla^\top D^k \nabla \]
+    Donde $D^k$ es una matriz diagonal que depende de la zona activa/inactiva.
+    \begin{alertblock}{El Problema Crítico}
+        Debido a la no convexidad, $H^k$ puede tener autovalores negativos. El Newton puro podría divergir o ir a un máximo.
+    \end{alertblock}
+\end{frame}
+
+\section{Trust-Region y Regularización R}
+
+% 11. Regularización R
+\begin{frame}{Estabilización vía Regularización R}
+    Para asegurar que la dirección sea de descenso, el paper introduce:
+    \[ (H^k + \beta^k R^k) \delta u = -g^k \]
+    Donde:
+    \begin{itemize}
+        \item $R^k$ es una matriz de regularización basada en la estructura del Hessiano.
+        \item $\beta^k$ es el parámetro de Trust-Region.
+    \end{itemize}
+\end{frame}
+
+% 12. Algoritmo Trust-Region (Resumen)
+\begin{frame}{Lógica del Algoritmo 3.6}
+    \begin{enumerate}
+        \item Resolver el sistema regularizado para obtener $\delta u$.
+        \item Evaluar el ratio $\rho^k = \frac{\text{Reducción Real}}{\text{Reducción Predicha}}$.
+        \item Si $\rho^k$ es alto: Aumentar el radio (disminuir $\beta$).
+        \item Si $\rho^k$ es bajo: Disminuir el radio (aumentar $\beta$).
+        \item Aplicar búsqueda lineal de Wolfe-Powell para asegurar convergencia global.
+    \end{enumerate}
+\end{frame}
+
+\section{Análisis de Convergencia}
+
+% 13. Convergencia Global
+\begin{frame}{Convergencia Global (Teorema 3.7)}
+    \begin{itemize}
+        \item Bajo la búsqueda lineal de Wolfe-Powell, la secuencia de gradientes satisface $\lim_{k\to\infty} \|\nabla f_\gamma(u^k)\| = 0$.
+        \item Esto garantiza que el algoritmo no se detiene a menos que encuentre un punto estacionario.
+    \end{itemize}
+\end{frame}
+
+% 14. Convergencia Local Superlineal
+\begin{frame}{Convergencia Superlineal (Teorema 3.10)}
+    \begin{itemize}
+        \item Si el B-Hessiano en el óptimo $u^*$ es estrictamente positivo definido.
+        \item Entonces, conforme $k \to \infty$, $\beta^k \to 0$.
+        \item El método se convierte en un Newton puro sobre un sistema semismooth.
+        \item \textbf{Resultado:} $\|u^{k+1} - u^*\| = o(\|u^k - u^*\|)$.
+    \end{itemize}
+\end{frame}
+
+\section{Experimentación Numérica}
+
+% 15. Setup Experimental
+\begin{frame}{Configuración de Pruebas}
+    \begin{itemize}
+        \item Imágenes: Shepp-Logan, Cameraman, Texto.
+        \item Degradaciones: Ruido Gaussiano, Blurring Gaussiano.
+        \item Parámetros: $q \in \{0.25, 0.5, 0.75\}$, $\gamma = 0.1$.
+        \item Comparación contra: BFGS y Fixed-Point (Lagged Diffusivity).
+    \end{itemize}
+\end{frame}
+
+% 16. Resultados: Eficiencia
+\begin{frame}{Eficiencia Computacional}
+    El método de Newton propuesto supera significativamente a BFGS:
+    \begin{table}[]
+        \begin{tabular}{@{}llll@{}}
+        \toprule
+        Método       & Tolerancia & Tiempo (s) & PSNR  \\ \bottomrule
+        BFGS         & $1e-7$     & 70.91      & 29.70 \\
+        Fixed-Point  & $1e-7$     & 12.54      & 29.70 \\
+        \textbf{Propuesto} & \textbf{$1e-7$} & \textbf{2.68} & \textbf{30.14} \\ \bottomrule
+        \end{tabular}
+    \end{table}
+    \textit{Nota: El método no solo es más rápido, sino que alcanza un PSNR ligeramente superior.}
+\end{frame}
+
+% 17. Resultados: Calidad Visual (q variable)
+\begin{frame}{Efecto del parámetro $q$}
+    \begin{itemize}
+        \item $q=1$: Bordes algo difusos (TV estándar).
+        \item $q=0.5$: Bordes extremadamente nítidos, reconstrucción perfecta de zonas constantes.
+        \item $q \to 0$: El modelo se vuelve más robusto al ruido impulsivo pero el funcional es más difícil de optimizar.
+    \end{itemize}
+\end{frame}
+
+% 18. Aplicación: Tomografía (Radon)
+\begin{frame}{Restauración desde Datos de Radon}
+    \begin{itemize}
+        \item Se prueba con la Transformada de Radon (problema altamente subdeterminado).
+        \item El solver maneja la matriz densa $K$ mediante gradiente conjugado interno.
+        \item Resultado: PSNR de 37.3 dB vs 26.7 dB del TV estándar.
+    \end{itemize}
+\end{frame}
+
+\section{Análisis en Espacios de Funciones (Infinite Dim)}
+
+% 19. El modelo en $H^1_0(\Omega)$
+\begin{frame}{Extensión al Espacio Continuo}
+    El problema en dimensión infinita:
+    \[ \inf_{u \in H^1_0(\Omega)} \int_\Omega \left( \frac{\mu}{2}|\nabla u|^2 + \frac{\alpha}{q}|\nabla u|^q + \text{fidelidad} \right) dx \]
+    \begin{alertblock}{Falla de Semicontinuidad Inferior}
+        El integrando no es convexo en la variable del gradiente. El funcional no es \textbf{w.l.s.c.} (weakly lower semicontinuous).
+    \end{alertblock}
+\end{frame}
+
+% 20. Envolvente Bi-polar y Relajación
+\begin{frame}{Relajación del Problema}
+    \begin{itemize}
+        \item Se construye la envolvente w.l.s.c. usando el biconjugado de Fenchel (bi-polar).
+        \item Se demuestra que el problema relajado tiene solución.
+        \item \textbf{Advertencia (Ejemplo 5.3):} La solución del problema relajado puede estar muy lejos del ínfimo del problema original (Efecto Bolza).
+    \end{itemize}
+\end{frame}
+
+\section{Conclusiones y Aportes}
+
+% 21. Resumen de Aportes
+\begin{frame}{Aportes Principales}
+    \begin{itemize}
+        \item \textbf{Teórico:} Prueba de existencia y consistencia de la Huberización.
+        \item \textbf{Algorítmico:} Combinación de Newton Semismooth con Trust-Region para manejar no convexidad.
+        \item \textbf{Numérico:} Solver con convergencia superlineal comprobada, superando solvers lineales tradicionales.
+        \item \textbf{Práctico:} Excelente preservación de bordes en problemas de imagenología médica (Radon).
+    \end{itemize}
+\end{frame}
+
+% 22. Diapositiva Final
+\begin{frame}
+    \centering
+    \Huge \textcolor{primary}{¿Preguntas?}
+    
+    \vspace{1cm}
+    \large \textbf{Gracias por su atención}
+    \vspace{0.5cm}
+    
+    \footnotesize contacto: maestria\_opt@universidad.edu
+\end{frame}
+
+\end{document}

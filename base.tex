@@ -1,0 +1,505 @@
+%! TeX program = pdflatex
+\documentclass[review,onefignum,onetabnum]{siamonline190516}
+% \documentclass[onefignum,onetabnum]{siamonline190516}
+
+\usepackage[short]{optidef}
+\usepackage[autostyle]{csquotes}
+% \usepackage{authblk}
+\usepackage[textsize=scriptsize]{todonotes}
+\usepackage{biblatex}
+\bibliography{vi2asmpec_depurado.bib}
+\usepackage[font=footnotesize]{caption}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage[margin=1in]{geometry}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{csvsimple}
+\usepackage{siunitx,arydshln}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{colormaps}
+
+\newcommand{\David}[1]{\todo[inline]{David: #1}}
+\newcommand{\Daniela}[1]{\todo[inline]{Daniela: #1}}
+% Math operators added
+\DeclareMathOperator{\Cos}{Cos}
+\DeclareMathOperator{\Sin}{Sin}
+\DeclareMathOperator{\Tan}{Tan}
+\DeclareMathOperator{\Rm}{R}
+\DeclareMathOperator{\D}{D}
+\DeclareMathOperator{\A}{A}
+\DeclareMathOperator{\B}{B}
+% Math operators shortcuts
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Kbb}{\mathbb{K}}
+\newcommand{\Abb}{\mathbb{A}}
+\newcommand{\Bbold}{\mathbb{B}}
+\newcommand{\Ebb}{\mathbb{E}}
+\newcommand{\Lbb}{\mathbb{L}}
+\newcommand{\Ical}{\mathcal{I}}
+\newcommand{\Jcal}{\mathcal{J}}
+\newcommand{\Acal}{\mathcal{A}}
+\newcommand{\Ascal}{\mathcal{A}_S}
+\newcommand{\Ccal}{\mathcal{C}}
+\newcommand{\Bcal}{\mathcal{B}}
+\newcommand{\Gcal}{\mathcal{G}}
+\newcommand{\Dcal}{\mathcal{D}}
+\newcommand{\Lcal}{\mathcal{L}}
+\newcommand{\Tcal}{\mathcal{T}}
+\newcommand{\Ncal}{\mathcal{N}}
+\newcommand{\Ecal}{\mathcal{E}}
+\newcommand{\Fcal}{\mathcal{F}}
+\newcommand{\Kcal}{\mathcal{K}}
+\newcommand{\Rcal}{\mathcal{R}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\scalar}[2]{\langle #1 , #2 \rangle}
+\newcommand{\frob}[2]{\langle #1 , #2 \rangle_F}
+\DeclareMathOperator{\minimize}{minimize}
+\DeclareMathOperator{\rank}{rank}
+\newcommand{\bigzero}{\mbox{\normalfont\Large\bfseries 0}}
+\newcommand{\bigiden}{\mbox{\normalfont\Large\bfseries I}}
+\newcommand{\Bdiag}{\mbox{\normalfont\normalsize\bfseries Bdiag}}
+\newcommand{\Tdiag}{\mbox{\normalfont\normalsize\bfseries Tdiag}}
+\newcommand{\rvline}{\hspace*{-\arraycolsep}\vline\hspace*{-\arraycolsep}}
+\newcommand{\nota}[1]{\textcolor{violet}{#1}}
+\DeclareMathOperator{\spa}{span}
+
+\newcommand*{\addheight}[2][.5ex]{%
+  \raisebox{0pt}[\dimexpr\height+(#1)\relax]{#2}%
+}
+
+\usepackage{lipsum}
+\usepackage{amsfonts, amssymb}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\ifpdf
+  \DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
+\else
+  \DeclareGraphicsExtensions{.eps}
+\fi
+
+\newcommand{\nb}[3]{
+		{\colorbox{#2}{\bfseries\sffamily\scriptsize\textcolor{white}{#1}}}
+		{\textcolor{#2}{\sf\small$\blacktriangleright$\textit{#3}$\blacktriangleleft$}}}
+\newcommand{\dva}[1]{\nb{David}{white!30!red}{#1}}
+\newcommand{\dr}[1]{\nb{Dani}{white!30!blue}{#1}}
+
+% Prevent itemized lists from running into the left margin inside theorems and proofs
+\usepackage{enumitem}
+\setlist[enumerate]{leftmargin=.5in}
+\setlist[itemize]{leftmargin=.5in}
+
+% Add a serial/Oxford comma by default.
+\newcommand{\creflastconjunction}{, and~}
+
+% Used for creating new theorem and remark environments
+\newsiamremark{remark}{Remark}
+\newsiamremark{hypothesis}{Hypothesis}
+\newsiamremark{assumption}{Assumption}
+\crefname{hypothesis}{Hypothesis}{Hypotheses}
+\newsiamthm{claim}{Claim}
+\allowdisplaybreaks
+
+% Sets running headers as well as PDF title and authors
+\headers{Bilevel Imaging Learning Problems as MPCC: Applications}{J.C. De los Reyes  and D. Riera and D. Villac\'{\i}s}
+
+% Title. If the supplement option is on, then "Supplementary Material"
+% is automatically inserted before the title.
+\title{Bilevel Imaging Learning Problems as Mathematical Programs with\\ Complementarity Constraints: Applications
+% \thanks{Submitted to the editors DATE.
+% % \funding{This work was funded by the Escuela Polit\'ecnica Nacional under grant PI-...}
+% }
+}
+
+% Authors: full names plus addresses.
+\author{Juan Carlos De los Reyes\thanks{Research Center for Mathematical Modeling (MODEMAT), Quito, Ecuador.
+  Email: \email{juan.delosreyes@epn.edu.ec}}\and Daniela Riera\thanks{Research Center for Mathematical Modeling (MODEMAT), Quito, Ecuador. Email: \email{daniela.riera@epn.edu.ec}} \and David Villac\'{\i}s\thanks{Departamento de M\'etodos Cuantitativos, Universidad Loyola Andaluc\'ia, Seville, Spain. Email: \email{davillacis@uloyola.es}}
+}
+
+\usepackage{amsopn}
+\DeclareMathOperator{\diag}{diag}
+
+
+%Optional PDF information
+\ifpdf
+\hypersetup{
+  pdftitle={Bilevel Imaging Learning Problems as Mathematical Programs with Complementarity Constraints},
+  pdfauthor={J.C. De los Reyes}
+}
+\fi
+% \externaldocument{ex_supplement}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+    We study the numerical solution of bilevel imaging learning problems where the lower-level instance corresponds to a convex variational model involving first- and second-order nonsmooth sparsity-based regularizers. By lifting the primal-dual reformulation of the lower-level problem, the original bilevel instance may be reformulated as a \emph{Mathematical Program with Complementarity Constraints (MPCC)}. The resulting MPCCs are of very large scale nature, requiring a tailored implementation strategy to solve the problems with available software such as the Interior Point OPTimizer (IPOPT). We study different imaging applications --inpainting, denoising, MRI reconstruction,-- with three sparsity-based regularizers: Directional Total Variation, Total Generalized Variation and Isotropic Total Variation. We provide insights into the corresponding bilevel problems --stationarity conditions-- and report on numerical results obtained by using the proposed MPCC reformulation, together with the developed implementation strategy in IPOPT.
+  \end{abstract}
+
+% REQUIRED
+\begin{keywords}
+  Bilevel optimization, inverse problems, machine learning, mathematical programms with complementarity constraints, variational models.
+\end{keywords}
+
+% REQUIRED
+\begin{AMS}
+  49K99, 90C33, 68U10, 68T99, 65K10
+\end{AMS}
+
+%\listoftodos
+
+% 1. Introduction
+% 2. Implementation strategy: use of available IPOPT software; exploit structure via exact jacobian and hessian; use of parallel solvers to exploit sparse matrix structure; relaxation of complementarity constraints accoording to experimentation; details about stopping criteria, restarting, etc.
+% 3. Directional TV: formulation of lower-level; formulation of bilevel; stationarity system; implementation particularities (building the directional matrix, test problems, size of training set, etc.)
+% 4. TGV: ormulation of lower-level; formulation of bilevel; stationarity system; implementation particularities (building the directional matrix, test problems, size of training set, etc.)
+% 5. Higher order DTV: ormulation of lower-level; formulation of bilevel; stationarity system; implementation particularities (building the directional matrix, test problems, size of training set, etc.)
+% 6. Conclusions
+
+\section{Introduction}
+Bilevel learning problems have been applied to various imaging tasks, starting with their introduction in \cite{tappen2007utilizing} for learning Markov random field models and in \cite{de2013image, kunisch2013bilevel} for optimal learning of noise models and nonsmooth regularizers in variational denoising problems. Since then, numerous successful applications have been considered within this framework, including mixed noise models \cite{calatroni2013dynamic,calatroni2019analysis}, higher-order regularizers \cite{reyes2015a,davoli2018one,davoli2019adaptive,hintermuller2017optimal}, blind deconvolution problems \cite{hintermuller2015bilevel}, and nonlocal models \cite{d2021bilevel,bartels2020parameter}. These results demonstrate the versatility and effectiveness of the bilevel learning approach for a wide range of imaging tasks.
+
+% Aún cuando los problemas de aprendizaje binivel permiten estimar óptimamente los diferentes parámetros de los modelos variacionales en imágenes, una de sus mayores desventajas es la dificultad de su resolución computacional. Para lidiar con este tema, se han propuesto en la literatura métodos de regularización --para evitar la estructura no diferencial del problema binivel-- y algoritmos inexactos --para no tener que resolver con gran precisión el problema del nivel inferior. 
+
+In the case of variational imaging models, even though bilevel learning problems enable the optimal choice of different model parameters, one of their major disadvantages concerns their numerical solution, which turns out to be very challenging because of the nonsmooth two-level structure and the large number of variables involved. To address this issue, basically two different strategies have been proposed in the literature. On one hand, regularization methods have been considered in \cite{de2013image,kunisch2013bilevel}, to avoid the non-differentiable structure of the bilevel problem and being able to solve a regularized --typically ill-conditioned-- single-level problem. The second strategy consists in using inexact or incomplete iterative algorithms, to avoid the need for high-precision accuracy of the lower-level problem solution \cite{ochs2016techniques,ehrhardt2020inexact} in order to iterate fast at the upper-level.
+
+Based on the recently proposed reformulation of bilevel imaging problems as \emph{Mathematical Programs with Complementarity Constraints} (MPCC) and the targeted strong stationary points (see the accompanying paper \cite{d2021bilevel} for further details), in this paper we consider an alternative strategy for solving these problems by using large-scale interior point methods that are implemented in available nonlinear programming solvers. In particular, we make use of the Interior Point OPTimizer (IPOPT) originally developed in \cite{wachter2006implementation}. Let us notice that the constraints in our problems are related to mixed complementarity problems and not just standard complementarity. This adds new difficulties to the numerical solution of the problems considered.
+
+The number of variables and constraints in the mathematical programs to be solved makes any software used directly, with standard configurations, fail to solve the bilevel problems under study. In this regard, it becomes necessary to develop a strategy that allows to exploit the sparse structure of the constraints' Jacobian, thus reducing the number of variables and enabling efficient parallel solution of the resulting linear systems. We report on this implementation strategy, together with the performance of IPOPT for some representative bilevel learning problems, and provide some insights about the behaviour.
+
+The outline of the paper is as follows. In \Cref{sec:mpcc_formulation}, we describe the general implementation strategy used for solving the resulting large-scale MPCCs arising from bilevel learning problems. In \Cref{sec:initial_feasible}, we describe how to generate an initial feasible point for the MPCC reformulation.
+
+Furthermore, in \Cref{sec:directionalTV}, the Directional Total Variation (DTV) is considered as regularizer in an inpainting task that involves images with directional patterns. In \Cref{sec:TGV}, a bilevel denoising problem  with a Total Generalized Variation (TGV) prior is considered. The regularizer acts patchwise within the image, prompting an exploration of various patch sizes and configurations. Moving forward to \Cref{sec:experiments_TV}, we shift our focus to an MRI reconstruction problem. Here, a bilevel strategy is introduced to determine the optimal weights for the Isotropic Total Variation (TV) prior. This strategy unfolds across different centered rings, each exerting influence on specific areas of the image.
+
+
+\dr{Añadir preliminares}
+\section{Preliminaries}
+
+In this section, we introduce the notation and basic concepts that will be used throughout the paper.
+
+A general mathematical program with complementarity constraints (MPCC) has the form:
+\begin{mini!}
+  {x\in\R^{d}}{f(x)}{\label{eq:mpcc}}{} 
+  \addConstraint{g(x)\leq 0, h(x)=0,} 
+  \addConstraint{0\leq M(x)\perp N(x)\geq 0,}{} 
+\end{mini!}
+where $f:\mathbb{R}^d\to \mathbb{R}$ is the objective function, $g:\mathbb{R}^d\to\mathbb{R}^m$ and $h:\mathbb{R}^d\to\mathbb{R}^p$ are the inequality and equality constraints respectively and $G,H:\mathbb{R}^d\to\mathbb{R}^m$ are the complementarity constraints. The expression $0\leq G(x)\perp H(x)\geq 0$ is an abbreviation for 
+$$
+M_i(x)\geq 0,\quad N_i(x)\geq 0,\quad M_i(x)N_i(x)=0\quad \forall i=1,\ldots,q. 
+$$
+
+We define the feasible set by 
+$$
+X=\{x\in\mathbb{R}^n:g(x)\leq 0, 0\leq M(x)\perp N(x)\geq 0\}
+$$
+and the following index sets for a given point $x\in X:$
+\begin{align*}
+  \mathcal{A}(x)&:=\{i: M_i(x)=0, N_i(x)>0\},\\
+  \mathcal{B}(x)&:=\{i:M_i(x)=0, N_i(x)=0\},\\
+  \mathcal{I}(x)&:=\{i:M_i(x)>0, N_i(x)=0\}.
+\end{align*}
+The sets $\mathcal{A}(x), \mathcal{I}(x), \mathcal{B}(X)$ are called active, inactive and biactive sets, respectively. 
+
+\subsection{MPCC qualification constraints} The special structure of this kind of nonlinear problems, prevents us from directly applying most off the classical results. For this reason we have specific qualification constraints. First, we define the tangent cone $\mathcal{T}_X(x^*)$ and the MPCC-linearized tangent cone $\mathcal{L}_X^{MPCC}(x).$
+
+Let $x\in X$ be feasible for \eqref{eq:mpcc}. The tangent (Bouligand) cone to a set $X$ at the point $x^*$ is given by
+$$
+\mathcal{T}_X(x^*):=\{d\in\mathbb{R}^n:\exists x_k\xrightarrow{X} x^*, \exists t_k\downarrow 0: t_k^{-1}(x_k-x^*)\to d\}.
+$$
+The MPCC-linearized tangent cone at $x^*\in X$ está dado por
+\[
+L_X^{MPCC}(x^*) := \left\{ d \in \mathbb{R}^n :
+\begin{aligned}
+& \nabla g_i(x^*)^\top d \leq 0 && \forall i \in \{ g_i(x^*) = 0 \}, \\
+& \nabla h_i(x^*)^\top d = 0 && \forall i = 1, \ldots, p, \\
+& \nabla M_i(x^*)^\top d = 0 && \forall i \in \mathcal{A}(x^*), \\
+& \nabla N_i(x^*)^\top d = 0 && \forall i \in \mathcal{I}(x^*), \\
+& \nabla M_i(x^*)^\top d \geq 0 && \forall i \in \mathcal{B}(x^*), \\
+& \nabla N_i(x^*)^\top d \geq 0 && \forall i \in \mathcal{B}(x^*), \\
+& \big(\nabla M_i(x^*)^\top d\big)\big(\nabla N_i(x^*)^\top d\big) = 0 
+&& \forall i \in \mathcal{B}(x^*)
+\end{aligned}
+\right\}.
+\]
+From the interaction of these two cones and/or their polars, different MPCC constraint qualification conditions may be established. 
+
+Let $x^*\in X$ be feasible for \eqref{eq:mpcc}.
+\begin{itemize}
+  \item [(a)] \textit{MPCC-Abadie constraint qualification (MPCC-ACQ) holds at $x^*$ if}
+  $$
+  \mathcal{T}_X(x^*)=L_X^{MPCC}(x^*).
+  $$
+  \item [(b)] \textit{MPCC-relaxed constant positive linear dependence condition (MPCC-RCPLD).} Let $I_1\subset\{1,\ldots, p\}$ be such that $\{\nabla h_i(x^*)\}_{i\in I_1}$ is a basis for $\mathrm{span}\{\nabla h_i(x^*)\}_{i=1,\ldots,p}.$ \textit{MPCC-RCPLD} holds at $x^*$ if there is a neighborhood $V(x^*)$ of $x^*$ such that
+  \begin{itemize}
+  \item $\{\nabla h_i(x)\}_{i=1,\ldots,p}$ has the same rank for every $x\in V(x^*)$.
+  \item for any $I_2\subset \{i:g_i(x^*)=0\}, I_3\subset \mathcal{A}(x^*)\cup \mathcal{B}(x^*)$, and $I_4\subset \mathcal{I}(x^*)\cup \mathcal{B}(x^*),$ whenever there exist multpliers, not all zero, $(\lambda,\mu,\gamma,\nu)$ with $\mu_i\geq 0$ for each $i\in I_1$, either $\gamma_j\nu_j=0$ or $\gamma_j>0,\nu_j>0$ for each $j\in\mathcal{B}(x^*),$ such that
+  $$
+  \sum_{i\in I_1}\lambda_i\nabla h_i(x^*)+\sum_{i\in I_2}\mu_i\nabla g_i(x^*)-\sum_{i\in I_3}\gamma_i\nabla M_i(x^*)-\sum_{i\in I_4}\nu_i\nabla N_i(x^*)=0,
+  $$ 
+  then the vectors 
+  $$
+  \nabla h_i(x), i\in I_1, \quad \nabla g_i(x), i\in I_2, \quad \nabla M_i(x), i\in I_3, \quad \nabla N_i(x), i\in I_4,
+  $$
+  are linearly dependent for any $x\in V(x^*).$
+  \end{itemize}
+\end{itemize}
+
+\subsection{Stationarity conditions.}
+A feasible point $x^*\in X$ is called C-stationary for \eqref{eq:mpcc} if there exist multipliers $\lambda\in \mathbb{R}^p, \mu\in\mathbb{R}^m$, and $\mu, \nu\in \mathbb{R}^q$ such that the following system is satisfied:
+\begin{subequations}\label{eq:Csys}
+\begin{align}
+    \nabla f(x^*)+\nabla h(x^*)\lambda+\nabla g(x^*)\mu-\nabla M(x^*)\gamma-\nabla N(x^*)\nu&=0,\\
+    0\geq g(x^*)\perp \mu&\geq 0,\\
+    h(x^*)&=0,\\
+    M(x^*)\geq 0, N(x^*)&\geq 0,\\
+    \nu_i&=0\qquad\forall i\in \mathcal{A}(x^*),\\
+    \gamma_i&=0\qquad \forall i\in \mathcal{I}(x^*),\\
+    \gamma_i\nu_i&\geq 0\qquad\forall i\in \mathcal{B}(x^*).\label{3.2h}
+\end{align}
+\end{subequations}
+
+If \eqref{3.2h} is replaced by 
+$$
+\gamma_i\nu_i=0\quad \vee \quad \gamma_i\geq 0, \nu_i\geq 0\quad \forall i\in \mathcal{B}(x^*),
+$$
+then the system is called M-stationarity, which holds under MPCC-ACQ and the corresponding multiplier $(\lambda,\mu,\gamma,\nu)$ is called the \textit{M-multiplier}. If \eqref{3.2h} is replaced by 
+$$
+\gamma_i\geq 0, \nu_i\geq 0\qquad \forall i\in \mathcal{B}(x^*),
+$$
+then the system is called S-stationarity and the corresponding multiplier is called the \textit{S-multiplier}.
+
+\section{On the bilevel problem and its MPCC reformulation}\label{sec:mpcc_formulation}
+In this section, we will briefly describe the bilevel problem setting and for the particular case of image reconstruction and related inverse problems, how to reformulate it as a MPCC. For further details, we refer the reader to the accompanying paper \cite{de2023bilevel}.
+\subsection{Total Variation bilevel learning problem as MPCC (TV-MPCC)}
+Let us start with introducing the bilevel hyperparameter learning problem. Assuming the existence of a training set of clean and corrupted images, the optimal hyperparameters are obtained by solving the following bilevel problem:
+% \begin{mini!}
+% {(u,\alpha,\sigma)\in\R^{d\times p\times q}}{\Jcal(u,\alpha,\sigma)}{}{}
+% \addConstraint{u=\argmin_{v\in\R^d}\left\{\Dcal(v)+\sum_{j=1}^{m_1} Q(\alpha)_j \|(\mathbb{K} v)_j\| +\sum_{j=1}^{m_2} R(\sigma)_j |(\mathbb{B} v)_j|\right\}}
+% \addConstraint{Q(\alpha),R(\sigma)\ge0,}{}
+% \end{mini!}
+\begin{mini!}
+{(u,\alpha)\in\R^{d\times p}}{\Jcal(u,\alpha)}{}{}
+\addConstraint{u=\argmin_{v\in\R^d}\left\{\Dcal(v)+\sum_{j=1}^{m} Q(\alpha)_j \|(\mathbb{K} v)_j\|\right\}}
+\addConstraint{Q(\alpha)\ge0,}{}
+\end{mini!}
+with real vector parameter $\alpha\in\R^p$. The operator $Q:\R^p\to\R^{m}$ is assumed to be twice continuously differentiable, while the operator inside the norm $\mathbb{K}:\R^d\to\R^{m\times 2}$ is assumed to be linear. The data fidelity term $\Dcal:\R^{d}\to\R$ is assumed to be twice continuously differentiable and strongly convex. The adjoint of a linear operator $T$ will be denoted by $T^*$. The notation $|\cdot|$, $\|\cdot\|$ stand for the absolute value and the Euclidean norm, respectively. Similarly, $\scalar{\cdot}{\cdot}$ denotes the Euclidean scalar product.
+
+Following the analysis in~\cite{de2023bilevel}, and under the previously stated assumptions on the regularity and convexity of the lower-level problem, we can guarantee the existence of a unique minimizer. Moreover, its necessary and sufficient optimality condition is given by the following variational inequality of the second kind:
+% \begin{equation}\label{eq:opt_cond_lower_level}
+%     \scalar{\nabla \Dcal(u)}{v - u} + \sum_{i=1}^{m_1} Q(\alpha)_i\left(\|( \mathbb{K} v)_i\| - \|(\mathbb{K} u)_i\|\right) + \sum_{i=1}^{m_2} R(\sigma)_i\left(|( \mathbb{B} v)_i| - |(\mathbb{B} u)_i|\right) \ge 0,\quad\forall v\in\R^d.
+% \end{equation}
+\begin{equation}\label{eq:opt_cond_lower_level}
+    \scalar{\nabla \Dcal(u)}{v - u} + \sum_{i=1}^{m_1} Q(\alpha)_i\left(\|( \mathbb{K} v)_i\| - \|(\mathbb{K} u)_i\|\right) \ge 0,\quad\forall v\in\R^d.
+\end{equation}
+
+Furthermore, by using Fenchel duality, the variational inequality in~\cref{eq:opt_cond_lower_level} can be equivalently rewritten as the following primal-dual optimality system:
+\begin{align}
+\nabla \Dcal(u)+\mathbb{K}^\ast q &=0,\label{eq:opt_cond_primal}\\
+\scalar{q_i}{(\mathbb{K}u)_i} &= Q(\alpha)_i\|(\mathbb{K} u)_i\|,&i=1,\dots,m\label{eq:opt_cond_dual_1}\\
+% c_i (\mathbb{B}u)_i &= R(\sigma)_i|(\mathbb{B}u)_i|,&i=1,\dots,m_2\label{eq:opt_cond_dual_4}\\
+\|q_i\|&\le Q(\alpha)_i,&i=1,\dots,m\label{eq:opt_cond_dual_2}
+% |c_i| &\le R(\sigma)_i,&i=1,\dots,m_2\label{eq:opt_cond_dual_3}
+\end{align}
+
+Finally, in the accompanying paper \cite{de2023bilevel}, it is shown that the bilevel problem can be equivalently reformulated as a MPCC by considering the primal-dual optimality conditions of the lower-level problem as constraints of the upper-level problem. The resulting MPCC reads as follows:
+\begin{mini!}
+  {u,q,r,\delta,\theta,\alpha}{\Jcal(u,\alpha,\sigma)}{}{}
+  \addConstraint{\nabla \Dcal(u)+\mathbb{K}^\ast q + \mathbb{B}^\ast c =0}
+  \addConstraint{(\mathbb{K}u)_i - r_i[\cos(\theta_i),\sin(\theta_i)]^\top = 0,}{&\;\forall i=1,\dots,m}
+  \addConstraint{q_i-\delta_i[\cos(\theta_i),\sin(\theta_i)]^\top = 0,}{&\quad\forall i=1,\dots,m}
+  % \addConstraint{-c_i(\mathbb{B}u)_i \le R(\sigma)_i(\mathbb{B}u)_i \le c_i(\mathbb{B}u)_i,}{&\quad\forall i=1,\dots,m_2}
+  % \addConstraint{-R(\sigma)_i \le c_i \le R(\sigma)_i,}{&\quad\forall i=1,\dots,m_2}
+  % \addConstraint{0\le c_i(\mathbb{B}u)_i,}{&\quad\forall i=1,\dots,m_2}
+  \addConstraint{0\leq r_i\perp (Q(\alpha)_i -\delta_i)\geq 0,}{&\quad\forall i=1,\dots,m\label{eq:tv_mpcc_complementarity}}
+  \addConstraint{\delta_i\ge0,}{&\quad\forall i=1,\dots,m.}
+\end{mini!}
+
+\subsection{On the generation of an initial feasible point for the TV-MPCC}\label{subsec:tv_initial_feasible}
+As detailed in the previous section, the MPCC reformulation of the bilevel problem requires an initial feasible point to start the interior point algorithm. In this section, we describe how to generate such a point.
+
+The strategy chosen for this task is to solve a smoothed version of a TV regularized version of the original lower-level problem customized for a scalar parameter $\alpha$. In particular, we consider the following smooth reformulation of the optimality condition~\cref{eq:opt_cond_lower_level}:
+\begin{equation*}
+    \scalar{\nabla \Dcal(u)}{v} + \scalar{H_\gamma(\mathbb{K}u,\alpha)}{\mathbb{K}v} = 0,
+    \quad\forall v\in\R^d,
+\end{equation*}
+where $H_\gamma(\mathbb{K}u,\alpha) = [h_\gamma((\mathbb{K}u)_i,\alpha)]^\top$ for $i=1,\ldots,d$, and $h_\gamma(w_i,\alpha)$ is a function that approximates the $i$-th component of Huber-regularized dual multiplier, denoted as $q_i^\gamma = h_\gamma((\mathbb{K}u)_i,\alpha)\approx q_i$, and is parametrized by $\gamma>0$, see~\cite{de2012optimization}:
+\begin{equation*}
+    h_\gamma((\mathbb{K}u)_i,\alpha)=
+    \begin{cases}
+          \alpha\frac{(\mathbb{K}u)_i}{\|(\mathbb{K}u)_i\|}&\text{if}\;i\in\mathcal{A}^{\gamma}((\mathbb{K}u),\alpha), \\
+          \frac{(\mathbb{K}u)_i}{\|(\mathbb{K}u)_i\|}\left(\alpha-\frac{\gamma}{2}\left(\alpha-\gamma\|(\mathbb{K}u)_i\|+\frac{1}{2\gamma}\right)^2\right)&\text{if}\;i\in\mathcal{S}^{\gamma}((\mathbb{K}u),\alpha),\\
+          \gamma(\mathbb{K}u)_i & \text{if}\;i\in\mathcal{I}^{\gamma}((\mathbb{K}u),\alpha),
+    \end{cases}
+\end{equation*}
+where $\Acal^\gamma$, $\mathcal{S}^\gamma$ and $\Ical^\gamma$ denote the active, biactive and inactive index sets, respectively, defined as follows:
+\begin{align*}
+  \mathcal{A}^{\gamma}(\mathbb{K}u,\alpha)&:=\left\{i\in\{1,\ldots,m\}:\gamma\|(\mathbb{K}u)_i\|\geq \alpha+\frac{1}{2\gamma}\right\},\\
+  \mathcal{S}^{\gamma}(\mathbb{K}u,\alpha)&:=\left\{i\in\{1,\ldots,m\}:\alpha-\frac{1}{2\gamma}\leq\gamma\|(\mathbb{K}u)_i\|\leq \alpha+\frac{1}{2\gamma}\right\},\\
+  \mathcal{I}^{\gamma}(\mathbb{K}u,\alpha)&:=\left\{i\in\{1,\ldots,m\}:\gamma\|(\mathbb{K}u)_i\|\leq \alpha-\frac{1}{2\gamma}\right\}.
+\end{align*}
+This regularization has the advantage of being continuously differentiable, which allow us to write the optimality condition as a system of differentiable equations along with its corresponding Jacobian matrix, described as follows:
+\begin{equation*}
+    g(u,q,\alpha):=\begin{bmatrix}
+      \nabla \Dcal(u) + \mathbb{K}^* q,\\
+      q - H_\gamma(\mathbb{K}u,\alpha)
+    \end{bmatrix}=0,\quad \nabla g(u,q,\alpha)=\begin{bmatrix}
+      \nabla^2 \Dcal(u) & \mathbb{K}^* & 0 \\
+      \nabla_u H_\gamma(\mathbb{K}u,\alpha) & -I & \nabla_\alpha H_\gamma(\mathbb{K}u,\alpha)
+    \end{bmatrix}.
+\end{equation*}
+Then, a key part of the above system is the derivative of the smoothing function $h_\gamma$ with respect to both arguments $u$ and $\alpha$. In particular we have:
+\begin{align*}
+    \scalar{\nabla_u h_\gamma((\mathbb{K}u)_i,\alpha)}{v}&=\left\{\begin{array}{ll}
+         \alpha \frac{(\mathbb{K}v)_i}{\|(\mathbb{K}u)_i\|}-\alpha \langle (\mathbb{K}u)_i,(\mathbb{K}v)_i\rangle\frac{(\mathbb{K}u)_i}{\|(\mathbb{K}u)_i\|^3}&\text{if}\;i\in\mathcal{A}^{\gamma}(\mathbb{K}u,\alpha),  \\
+         \phi((\mathbb{K}u)_i,(\mathbb{K}v)_i,\alpha)&\text{if}\;i\in\mathcal{S}^{\gamma}(\mathbb{K}u,\alpha),\\
+         \gamma(\mathbb{K}v)_i&\text{if}\;i\in\mathcal{I}^{\gamma}(\mathbb{K}u,\alpha).
+    \end{array}\right.
+    \\
+    \nabla_\alpha h_\gamma((\mathbb{K}u)_i,\alpha)\eta&=\left\{\begin{array}{ll}
+         \eta\frac{(\mathbb{K}u)_i}{\|(\mathbb{K}u)_i\|}&\text{if}\;i\in\mathcal{A}^{\gamma}(\mathbb{K}u,\alpha),  \\
+         \eta\frac{(\mathbb{K}u)_i}{\|(\mathbb{K}u)_i\|}\left(1-\gamma\left(\alpha-\gamma\|(\mathbb{K}u)_i\|+\frac{1}{2\gamma}\right)\right)&\text{if}\;i\in\mathcal{S}^{\gamma}(\mathbb{K}u,\alpha),\\
+         0&\text{if}\;i\in\mathcal{I}^{\gamma}(\mathbb{K}u,\alpha).
+    \end{array}\right.
+\end{align*}
+where:
+\begin{multline*}
+  \phi(\omega_i,\nu_i,\alpha):= \left(\frac{\nu_i}{\|\omega_i\|}-\langle \omega_i,\nu_i\rangle\frac{\omega_i}{\|\omega_i\|^3}\right)\left(\alpha-\frac{\gamma}{2}\left(\alpha-\gamma\|\omega_i\|+\frac{1}{2\gamma}\right)^2\right) \\+ \frac{\omega_i}{\|\omega_i\|}\left(\gamma^2\left(\alpha-\gamma\|\omega_i\|+\frac{1}{2\gamma}\right)\frac{\langle \omega_i,\nu_i\rangle}{\|\omega_i\|}\right).
+\end{multline*}
+\dr{Agregar el problema regularizado que se resuelve para obtener el punto inicial factible}
+
+Finally, we obtain the feasible initial point by solving the following problem:
+\begin{mini!}
+  {u,q,r,\delta,\theta,\alpha}{\Jcal(u,\alpha,\sigma)}{}{}
+  \addConstraint{\nabla \Dcal(u)+\mathbb{K}^\ast q + \mathbb{B}^\ast}{c=0}
+  \addConstraint{q_i}{=h_\gamma((\mathbb{K}u)_i,\alpha),\quad\forall i=1,\dots,m. \label{eq:tv_regularized}}
+\end{mini!}
+
+
+
+\subsection{Numerical approximation of the TV-MPCC solution}
+
+Now, this reformulation allow us to use classical tools from the MPCC literature to analyze the bilevel problem, as well as to use known numerical methods for its solution. In this regard, we will make use of the classical Scholtes relaxation of this MPCC, which consists in replacing the complementarity constraint~\eqref{eq:tv_mpcc_complementarity} by the following relaxed constraints:
+\begin{mini!}
+  {u,q,r,\delta,\theta,\alpha}{\Jcal(u,\alpha,\sigma)}{\label{eq:mpcc_relaxation}}{}
+  \addConstraint{\nabla \Dcal(u)+\mathbb{K}^\ast q + \mathbb{B}^\ast c =0}
+  \addConstraint{(\mathbb{K}u)_i - r_i[\cos(\theta_i),\sin(\theta_i)]^\top = 0,}{&\;\forall i=1,\dots,m}
+  \addConstraint{q_i-\delta_i[\cos(\theta_i),\sin(\theta_i)]^\top = 0,}{&\quad\forall i=1,\dots,m}
+  % \addConstraint{-c_i(\mathbb{B}u)_i \le R(\sigma)_i(\mathbb{B}u)_i \le c_i(\mathbb{B}u)_i,}{&\quad\forall i=1,\dots,m_2}
+  % \addConstraint{-R(\sigma)_i \le c_i \le R(\sigma)_i,}{&\quad\forall i=1,\dots,m_2}
+  % \addConstraint{0\le c_i(\mathbb{B}u)_i,}{&\quad\forall i=1,\dots,m_2}
+  \addConstraint{0\leq r_i\perp (Q(\alpha)_i -\delta_i)\geq \varepsilon,}{&\quad\forall i=1,\dots,m}
+  \addConstraint{\delta_i\ge0,}{&\quad\forall i=1,\dots,m.}
+\end{mini!}
+where $\varepsilon>0$ is a small parameter that is driven to zero along the iterations of the algorithm. A key part on numerically solving this type of problems is to ensure its convergence to a stationary solution. As described in XX, said convergence comes along with the the existence of Lagrange multipliers associated to the constraints, e.g., the satisfaction of a suitable constraint qualification. This is guaranteed by the following result.
+
+\begin{theorem}
+The proposed model satisfies the MPCC-RCPLD constraint qualification condition. Thus, any local solution of the MPCC is a strongly stationary point.
+\end{theorem}
+\begin{proof}
+  See~\cite[Theorem 3.4]{de2023bilevel}.
+\end{proof}
+
+Now, the relaxation proposed in \eqref{eq:relaxation} allows us to use standard nonlinear programming solvers, such as IPOPT, to solve the resulting problem. However, a suitable initial feasible point is required to start the interior point algorithm. The following section describes how to generate such a point.
+
+\dr{Agregar pseucódigo del algoritmo para generar el punto inicial factible}
+
+We use the following algortihm:
+
+\begin{algorithm}[H]
+\caption{Algorithm for solving MPCC}
+\label{alg:mpcc_tvd}
+\begin{algorithmic}[1]
+\Require $x^0$ (obtained by solving the regularized problem with \texttt{ipopt}), $t_0>0$, $t_{\min}>0$, $\beta\in(0,1)$, complementarity tolerance $\tau$, maximun number of iterations $k_{\max}$.
+\For{$k=0,1,\dots,k_{\max}$}
+\If{$t\leq t_{\min}$}
+  \State \textbf{break}
+\EndIf
+\State $\bar{x}^k \gets$ solution of relaxed NLP \eqref{eq:mpcc_relaxation} with relaxation parameter $t$
+\State$\bar{c}^{k} \gets \|\min(\bar{r}^{k}, \bar{\alpha}^{k}-\bar{\delta}^{k})\|.$
+\If{$\bar{c}^k < \tau$}
+   \State \textbf{return} $\bar{x}^{k}$.
+\EndIf
+\If{the NLP converges successfully}
+   \State $t \gets \max\{t_{\min},\, \beta\, t\}$ 
+\Else 
+   \State $t \gets 1.1\, t$     
+   \State $\beta \gets 0.9\, \beta$
+\EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Total Generalized Variation bilevel learning problem as MPCC (TGV-MPCC)}
+Here, we consider the bilevel learning problem where the lower-level problem involves a Total Generalized Variation (TGV) regularizer. The bilevel learning problem is defined as follows:
+\begin{mini!}
+{(u,\alpha,\beta)\in\R^{d\times p\times q}}{\Jcal(u,\alpha,\beta)}{}{}
+\addConstraint{u=\argmin_{(v,w)\in\R^d\times\R^d}\left\{\Dcal(v)+\sum_{j=1}^{m} Q(\alpha)_j \|(\mathbb{K} v - w)_j\| + \sum_{j=1}^n S(\beta)_j\|(\hat{\mathbb{E}}w)_j\|_F\right\}}
+\addConstraint{Q(\alpha),S(\beta)\ge0,}{}
+\end{mini!}
+with real vector parameters $\alpha\in\R^p$, $\beta\in\R^q$. The operator $Q:\R^p\to\R^{m}$ and $S:\R^q\to\R^{n}$ are assumed to be twice continuously differentiable, while the operators inside the norms $\mathbb{K}:\R^d\to\R^{m\times 2}$ and $\hat{\mathbb{E}}:\R^d\to\R^{n\times 2\times 2}$ are assumed to be linear. The data fidelity term $\Dcal:\R^{d}\to\R$ is assumed to be twice continuously differentiable and strongly convex. Like the previous case, we can write a primal-dual optimality system for the lower-level problem as follows:
+\begin{align}
+\nabla \Dcal(u)+\mathbb{K}^\ast q &=0,\label{eq:tgv_opt_cond_primal}\\
+q_i &= -\mathbb{E}^* \hat{\Lambda}_i,&i=1,\dots,m\\
+\scalar{q_i}{(\mathbb{K}u-w)_i} &= Q(\alpha)_i\|(\mathbb{K} u-w)_i\|,&i=1,\dots,m\label{eq:tgv_opt_cond_dual_1}\\
+\|q_i\|&\le Q(\alpha)_i,&i=1,\dots,m\label{eq:tgv_opt_cond_dual_2}\\
+\scalar{\Lambda_i}{(\mathbb{E}w)_i} &= S(\beta)_i\|(\mathbb{E}w)_i\|,&i=1,\dots,n\\
+\|\Lambda_i\| &\le S(\beta)_i ,&i=1,\dots,n\label{eq:tgv_opt_cond_dual_3}
+\end{align}
+where we transformed the matrix constraints into vectorial ones following~\cite[Section 2.2]{de2023bilevel}:
+\begin{equation*}
+  \Lambda_i = [\lambda^i_{1,1},\sqrt{2}\lambda^i_{1,2},\lambda^i_{2,2}]^\top,\quad (\mathbb{E}w)_i = [(\hat{\mathbb{E}}w)^i_{1,1},\sqrt{2}(\hat{\mathbb{E}}w)^i_{1,2},(\hat{\mathbb{E}}w)^i_{2,2}]^\top.
+\end{equation*}
+
+Finally, by considering the primal-dual optimality conditions of the lower-level problem as constraints of the upper-level problem, we can reformulate the bilevel problem as the following MPCC:
+\begin{mini!}
+  {u,w,q,r,\delta}{\Jcal(u,\alpha,\sigma)}{}{}
+  \addConstraint{\nabla \Dcal(u)+\mathbb{K}^\ast q + \mathbb{E}^\ast \Lambda=0}{}
+  \addConstraint{(\mathbb{K}u - w)_i = r_i[\cos(\theta_i),\sin(\theta_i)]^\top,}{&\;\forall i=1,\dots,m}
+  \addConstraint{q_i=\delta_i[\cos(\theta_i),\sin(\theta_i)]^\top,}{&\quad\forall i=1,\dots,m}
+  \addConstraint{(\mathbb{E}u)_i=\rho_i[\sin(\phi_i)\cos(\varphi_i),\sin(\phi_i)\sin(\varphi_i),\cos(\phi_i)]^\top,}{&\quad\forall i=1,\dots,n}
+  \addConstraint{\Lambda_i = \tau_i[\sin(\phi_i)\cos(\varphi_i),\sin(\phi_i)\sin(\varphi_i),\cos(\phi_i)]^\top,}{&\quad\forall i=1,\dots,n}
+  % \addConstraint{0\le c_i(\mathbb{B}u)_i,}{&\quad\forall i=1,\dots,m_2}
+  \addConstraint{0\leq r_i\perp (Q(\alpha)_i -\delta_i)\geq 0,}{&\quad\forall i=1,\dots,m\label{eq:tgv_mpcc_complementarity_1}}
+  \addConstraint{0\leq \rho_i\perp (S(\beta)_i -\tau_i)\geq 0,}{&\quad\forall i=1,\dots,n\label{eq:tgv_mpcc_complementarity_2}}
+  \addConstraint{\delta_i\ge0,}{&\quad\forall i=1,\dots,m}
+  \addConstraint{\tau_i\ge0,}{&\quad\forall i=1,\dots,n.}
+\end{mini!}
+
+As for the initial point strategy for this problem, we can follow the same approach as in \Cref{subsec:tv_initial_feasible}, by considering a smoothed version of the TV regularized lower-level problem and fix the parameter $\beta$.
+
+However, the large-scale nature of the problem requires a tailored implementation strategy, which we describe next.
+
+
+
+
+\subsection{On splitting a high dimensional imaging problem into overlapping blocks}
+When using this reformulation in high dimensional imaging problems, the number of variables and constraints becomes very large, making it difficult to solve the problem directly with standard configurations of IPOPT. To address this issue, we propose a strategy that exploits the sparse structure of the constraints' Jacobian, allowing us to reduce the number of variables and enabling efficient parallel solution of the resulting linear systems. This is achieved by splitting the image into overlapping blocks, and solving the problem block by block. This approach not only reduces the computational burden but also allows for parallel processing, significantly speeding up the solution process. The overlapping nature of the blocks ensures that the solution remains consistent across the entire image, while the block-wise approach allows for efficient handling of the large-scale problem.
+
+
+
+
+
+\section{Experiments}
+\dva{Mostrar evolución de la complementariedad por iteración}
+\subsection{Total Variation Image Denoising}
+\subsection{Directional Total Variation Image Inpainting}
+
+\dva{Reportar la definicion de la caja para $\alpha$ usando los parches en el regularizado. Tomando el maximo y el mínimo. El valor valor inicial sería el promedio.}
+\subsection{Solving an MRI Reconstruction Problem with Total Variation}
+\subsection{Total Generalized Variation Image Denoising}
+
+% \input{sections_applications/tgv.tex}
+% \input{sections_applications/higherDTV.tex}
+% \input{sections_applications/experiments_TV.tex}
+
+% \bibliographystyle{siamplain}
+% \bibliography{vi2_as_mpec}
+\printbibliography
+\end{document}

@@ -1,0 +1,639 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+% =========================
+% Paquetes básicos
+% =========================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{xcolor}
+
+% =========================
+% Tema visual
+% =========================
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+
+\definecolor{azulEPN}{RGB}{26,76,128}
+\definecolor{grisSuave}{RGB}{245,247,250}
+\definecolor{naranjaTVq}{RGB}{214,104,49}
+\setbeamercolor{title}{fg=azulEPN}
+\setbeamercolor{frametitle}{fg=azulEPN}
+\setbeamercolor{block title}{bg=azulEPN!85,fg=white}
+\setbeamercolor{block body}{bg=grisSuave,fg=black}
+\setbeamercolor{alerted text}{fg=naranjaTVq}
+
+% =========================
+% Comandos útiles
+% =========================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\TVq}{\operatorname{TV}_q}
+\newcommand{\grad}{\nabla}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1\right\rvert}
+
+% =========================
+% Datos
+% =========================
+\title{Modelos $TV^q$ no convexos en Restauración de Imágenes}
+\subtitle{análisis y un solucionador basado en regularización de región de confianza con convergencia superlineal}
+\author{Hintermüller y Wu (2013)}
+\institute{MODEMAT}
+\date{28 de mayo de 2026}
+
+\begin{document}
+
+% ============================================================
+% 1
+% ============================================================
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Esquema de la presentación}
+    \begin{itemize}
+    \item Motivación del modelo \(\TV_q\), con \(0<q<1\).
+    \item Planteamiento del modelo variacional no convexo.
+    \item Regularización tipo Huber del término no diferenciable.
+    \item Método Newton primal-dual regularizado.
+    \item Resultados teóricos y numéricos.
+\end{itemize}
+\end{frame}
+
+% ============================================================
+% 2
+% ============================================================
+\begin{frame}{Motivación}
+\begin{block}{Pregunta central}
+¿Cómo restaurar una imagen degradada preservando bordes y promoviendo la dispersión en el gradiente?
+\end{block}
+\end{frame}
+
+% ============================================================
+% 3
+% ============================================================
+\begin{frame}{Problema de restauración de imágenes}
+\begin{columns}[T]
+\column{0.48\textwidth}
+\begin{block}{Datos observados}
+Se observa una imagen degradada
+\[
+    z = Ku + \eta,
+\]
+donde:
+\begin{itemize}
+    \item \(u\): imagen verdadera,
+    \item \(K\): operador de degradación, por ejemplo blur,
+    \item \(\eta\): ruido.
+\end{itemize}
+\end{block}
+
+\column{0.48\textwidth}
+\begin{block}{Meta}
+Reconstruir una imagen \(u\) que:
+\begin{itemize}
+    \item sea cercana a los datos \(z\),
+    \item sea regular,
+    \item conserve bordes importantes.
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% 4
+% ============================================================
+\begin{frame}{El modelo clásico: Variación Total}
+El enfoque de variación total busca resolver, en forma simplificada,
+\[
+    \min_u \frac{\lambda}{2}\norm{Ku-z}_2^2 + \alpha \TV(u),
+\]
+donde
+\[
+    \TV(u) =\sum_{(i,j)\in\Omega} \abs{(\nabla u)_{ij}}.
+\]
+
+\begin{block}{Ventaja principal}
+La variación total penaliza el gradiente, pero permite discontinuidades: por eso preserva bordes mejor que regularizaciones cuadráticas.
+\end{block}
+\end{frame}
+
+% ============================================================
+% 5
+% ============================================================
+\begin{frame}{Dispersión en el gradiente}
+En restauración de imágenes, muchas imágenes naturales son aproximadamente constantes por regiones.
+
+\vspace{0.2cm}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    \draw[fill=blue!10,draw=azulEPN,thick] (0,0) rectangle (2,2);
+    \draw[fill=orange!15,draw=naranjaTVq,thick] (2,0) rectangle (4,2);
+    \draw[very thick,red] (2,0) -- (2,2);
+    \node at (1,1) {región 1};
+    \node at (3,1) {región 2};
+    \node[red] at (2,-0.35) {borde};
+\end{tikzpicture}
+\end{center}
+
+\begin{block}{Idea}
+Si el gradiente es cero en muchas zonas y distinto de cero solo en los bordes, entonces queremos promover sparsity de \(\nabla u\).
+\end{block}
+\end{frame}
+
+% ============================================================
+% 6
+% ============================================================
+\begin{frame}{De \(\ell_1\) a \(\ell_q\): la idea del paper}
+La TV clásica usa una penalización tipo \(\ell_1\) sobre el gradiente.
+
+\[
+    \sum_i \abs{v_i}
+\]
+
+El paper propone usar una penalización no convexa:
+\[
+    \sum_i \abs{v_i}^q, \qquad 0<q<1.
+\]
+
+\begin{block}{Interpretación}
+Para \(0<q<1\), la penalización se acerca más a contar componentes no nulas, es decir, se aproxima mejor a una idea tipo \(\ell_0\).
+\end{block}
+\end{frame}
+
+% ============================================================
+% 7
+% ============================================================
+\begin{frame}{Contribución del paper}
+\begin{enumerate}
+    \item Introduce un modelo \(\TV_q\) no convexo para restauración de imágenes.
+    \item Prueba existencia de minimizador en el caso discreto.
+    \item Regulariza localmente el término no diferenciable mediante una función tipo Huber.
+    \item Propone un método Newton primal-dual semismooth.
+    \item Usa regularización basada en región de confianza para tratar Hessianos indefinidos.
+    \item Demuestra convergencia global y convergencia local superlineal hacia puntos estacionarios del problema regularizado.
+\end{enumerate}
+\end{frame}
+
+% ============================================================
+% 8
+% ============================================================
+\begin{frame}{Notación básica}
+\begin{itemize}
+    \item \(\Omega\): dominio discreto de píxeles.
+    \item \(u\in\R^{|\Omega|}\): imagen reconstruida.
+    \item \(z\in\R^{|\Omega|}\): datos observados.
+    \item \(K\in\R^{|\Omega|\times |\Omega|}\): operador de degradación.
+    \item \(\nabla u = (\nabla_x u,\nabla_y u)\): gradiente discreto.
+    \item \(\lambda_{ij}>0\): peso de fidelidad, posiblemente dependiente del píxel.
+\end{itemize}
+
+\begin{block}{Norma local}
+Para cada píxel:
+\[
+    \abs{(\nabla u)_{ij}} = \sqrt{((\nabla_xu)_{ij})^2+((\nabla_yu)_{ij})^2}.
+\]
+\end{block}
+\end{frame}
+
+% ============================================================
+% 9
+% ============================================================
+\begin{frame}{Modelo variacional \(\TV_q\)}
+El problema principal en el caso discreto es:
+\[
+\min_{u\in\R^{|\Omega|}} f(u):=
+\sum_{(i,j)\in\Omega}
+\left(
+\frac{\mu}{2}\abs{(\nabla u)_{ij}}^2
++\frac{\alpha}{q}\abs{(\nabla u)_{ij}}^q
++\frac{\lambda_{ij}}{2}\abs{(Ku-z)_{ij}}^2
+\right).
+\]
+
+\begin{block}{Parámetros}
+\[
+    \alpha>0, \qquad 0<q<1, \qquad 0<\mu\ll \alpha.
+\]
+\end{block}
+\end{frame}
+
+% ============================================================
+% 10
+% ============================================================
+\begin{frame}{Planteamiento del modelo}
+\begin{columns}[T]
+\column{0.32\textwidth}
+\begin{block}{Fidelidad}
+\[
+\frac{\lambda_{ij}}{2}|(Ku-z)_{ij}|^2
+\]
+Obliga a que \(Ku\) se parezca a los datos observados.
+\end{block}
+
+\column{0.32\textwidth}
+\begin{block}{TV\(_q\)}
+\[
+\frac{\alpha}{q}|(\nabla u)_{ij}|^q
+\]
+Promueve sparsity del gradiente y preserva bordes.
+\end{block}
+
+\column{0.32\textwidth}
+\begin{block}{Término \(H^1\)}
+\[
+\frac{\mu}{2}|(\nabla u)_{ij}|^2
+\]
+Aporta suavidad y estabilidad adicional.
+\end{block}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% 11
+% ============================================================
+\begin{frame}{Existencia de minimizador}
+\begin{block}{Hipótesis clave}
+\[
+    \mathrm{Ker}(\nabla)\cap \mathrm{Ker}(K)=\{0\}.
+\]
+\end{block}
+
+\begin{block}{Resultado}
+Bajo condiciones adecuadas sobre \(\mu,\alpha,q,\lambda\) y \(K\), existe al menos un minimizador global del problema discreto.
+\end{block}
+
+\begin{alertblock}{Intuición}
+La hipótesis evita direcciones no controladas: no debe existir una imagen constante que también sea anulada por \(K\).
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 12
+% ============================================================
+\begin{frame}{No convexidad y no diferenciabilidad}
+Para \(0<q<1\), la función
+\[
+    s\mapsto |s|^q
+\]
+es no convexa y no es Lipschitz en cero.
+
+\begin{block}{Conjunto activo e inactivo}
+\[
+A(u)=\{(i,j)\in\Omega: |(\nabla u)_{ij}|\neq 0\},
+\qquad I(u)=\Omega\setminus A(u).
+\]
+\end{block}
+
+\begin{alertblock}{Consecuencia}
+La ecuación de Euler--Lagrange se debe interpretar separando píxeles activos e inactivos.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 13
+% ============================================================
+\begin{frame}{Ecuaciones de Euler--Lagrange del modelo original}
+Una condición de estacionariedad se escribe como:
+\[
+\begin{cases}
+-\mu\Delta u+K^\top\lambda(Ku-z)+\alpha\nabla^\top\left(|\nabla u|^{q-2}\nabla u\right)=0, & (i,j)\in A(u),\\[4pt]
+\nabla u=0, & (i,j)\in I(u).
+\end{cases}
+\]
+
+\begin{block}{Problema computacional}
+El término \(|\nabla u|^{q-2}\) puede explotar cuando \(|\nabla u|\to 0\).
+\end{block}
+\end{frame}
+
+% ============================================================
+% 14
+% ============================================================
+\begin{frame}{Huberización del término \(\TV_q\)}
+Para hacer el problema tratable numéricamente, se suaviza localmente:
+\[
+\varphi_\gamma(s)=
+\begin{cases}
+\dfrac{1}{q}|s|^q-\left(\dfrac{1}{q}-\dfrac{1}{2}\right)\gamma^q, & |s|>\gamma,\\[6pt]
+\dfrac{1}{2}\gamma^{q-2}|s|^2, & |s|\leq \gamma.
+\end{cases}
+\]
+
+\begin{block}{Interpretación}
+Cerca de cero se reemplaza \(|s|^q\) por una expresión cuadrática más regular.
+\end{block}
+\end{frame}
+
+% ============================================================
+% 15
+% ============================================================
+\begin{frame}{Modelo Huberizado}
+El problema regularizado es:
+\[
+\min_{u\in\R^{|\Omega|}} f_\gamma(u):=
+\sum_{(i,j)\in\Omega}
+\left(
+\frac{\mu}{2}|(\nabla u)_{ij}|^2
++\alpha\varphi_\gamma(|(\nabla u)_{ij}|)
++\frac{\lambda_{ij}}{2}|(Ku-z)_{ij}|^2
+\right).
+\]
+
+\begin{block}{Ventaja}
+El funcional \(f_\gamma\) es continuamente diferenciable.
+\end{block}
+\end{frame}
+
+% ============================================================
+% 16
+% ============================================================
+\begin{frame}{Gradiente del problema Huberizado}
+La condición de primer orden del problema regularizado es:
+\[
+\nabla f_\gamma(u)=
+-\mu\Delta u+K^\top\lambda(Ku-z)
++\alpha\nabla^\top\left(\max(|\nabla u|,\gamma)^{q-2}\nabla u\right)=0.
+\]
+
+\begin{alertblock}{Idea clave}
+La función \(\max(|\nabla u|,\gamma)\) evita dividir por cantidades cercanas a cero.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 17
+% ============================================================
+\begin{frame}{Consistencia cuando \(\gamma\to 0^+\)}
+\begin{block}{Resultado del paper}
+Si \(u_k\) son puntos estacionarios del problema Huberizado y \(\gamma_k\to0^+\), entonces existe una subsucesión que converge a un punto que satisface las ecuaciones de Euler--Lagrange del problema original.
+\end{block}
+
+\begin{alertblock}{Mensaje para la exposición}
+La Huberización no es solo un truco numérico: está conectada con el problema original cuando el parámetro \(\gamma\) se hace pequeño.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 18
+% ============================================================
+\begin{frame}{Formulación primal-dual}
+Se introduce una variable dual \(p\) asociada al gradiente:
+\[
+\begin{cases}
+-\mu\Delta u + K^\top\lambda(Ku-z)+\alpha\nabla^\top p=0,\\[4pt]
+\max(|\nabla u|,\gamma)^{2-q}p=\nabla u.
+\end{cases}
+\]
+
+\begin{block}{Ventaja}
+Esta formulación separa el equilibrio primal de la relación no lineal entre \(p\) y \(\nabla u\).
+\end{block}
+\end{frame}
+
+% ============================================================
+% 19
+% ============================================================
+\begin{frame}{Newton semismooth primal-dual}
+El objetivo es resolver el sistema no lineal primal-dual mediante un método de Newton generalizado.
+
+\begin{block}{Motivación}
+Los métodos Newton pueden ser muy rápidos localmente, pero aquí aparecen dos dificultades:
+\begin{itemize}
+    \item no convexidad del funcional,
+    \item posible indefinitud del Hessiano generalizado.
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Estrategia del paper}
+Combinar Newton semismooth con reweighting y regularización tipo región de confianza.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 20
+% ============================================================
+\begin{frame}{Reweighting de la ecuación de Euler--Lagrange}
+Dado un iterado \(u^k\), se define
+\[
+    m^k=\max(|\nabla u^k|,\gamma),
+\]
+y el peso
+\[
+    w^k=(m^k)^{q+r-2}, \qquad 0\leq r\leq 2-q.
+\]
+
+La ecuación reponderada queda:
+\[
+-\mu\Delta u + K^\top\lambda(Ku-z)
++\alpha\nabla^\top\left(w^k\max(|\nabla u|,\gamma)^{-r}\nabla u\right)=0.
+\]
+\end{frame}
+
+% ============================================================
+% 21
+% ============================================================
+\begin{frame}{Sistema lineal de Newton}
+Después de linealizar y eliminar la variable dual, se obtiene un sistema de la forma:
+\[
+    \widetilde H_k(r)\,\delta u^{k+1}=-g^k,
+\]
+donde
+\[
+    g^k=\nabla f_\gamma(u^k).
+\]
+
+\begin{block}{Lectura computacional}
+En cada iteración se busca una dirección \(\delta u^{k+1}\) que reduzca el residuo de estacionariedad.
+\end{block}
+\end{frame}
+
+% ============================================================
+% 22
+% ============================================================
+\begin{frame}{El problema del Hessiano indefinido}
+En problemas convexos, el Hessiano suele ser semidefinido positivo.
+
+\vspace{0.2cm}
+En este paper, por \(0<q<1\):
+\begin{itemize}
+    \item el funcional es no convexo,
+    \item el Hessiano generalizado puede no ser positivo definido,
+    \item una dirección de Newton puede no ser de descenso.
+\end{itemize}
+
+\begin{alertblock}{Consecuencia}
+Hay que estabilizar el sistema de Newton.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 23
+% ============================================================
+\begin{frame}{Regularización \(R\)}
+El paper interpreta el reweighting como una regularización del Hessiano:
+\[
+    (H_k+\beta_k R_k)\delta u^{k+1}=-g^k.
+\]
+
+\begin{block}{Rol de \(\beta_k\)}
+\begin{itemize}
+    \item Si \(\beta_k\) es grande, el sistema es más estable.
+    \item Si \(\beta_k\to 0\), se recupera el comportamiento de Newton puro.
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Idea clave}
+Regularizar lejos de la solución, pero dejar que la regularización desaparezca cerca de la solución.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 24
+% ============================================================
+\begin{frame}{Región de confianza}
+Se usa un modelo cuadrático local:
+\[
+    h_k(d)=f_\gamma(u^k)+(g^k)^\top d+\frac12 d^\top H_k^+d.
+\]
+
+La dirección se controla mediante una restricción tipo región de confianza:
+\[
+    \frac12 d^\top R_{k,\varepsilon}^+d\leq \frac12\sigma_k^2.
+\]
+
+\begin{block}{Propósito}
+Elegir adaptativamente la cantidad de regularización necesaria para obtener una dirección confiable.
+\end{block}
+\end{frame}
+
+% ============================================================
+% 25
+% ============================================================
+\begin{frame}{Algoritmo adaptativamente regularizado}
+\begin{enumerate}
+    \item Inicializar \(u^0,p^0,\beta_0,\sigma_0\).
+    \item Construir \(H_k^+\), \(R_{k,\varepsilon}^+\) y \(g^k\).
+    \item Resolver
+    \[
+        (H_k^+ + \beta_k R_{k,\varepsilon}^+)d^k=-g^k.
+    \]
+    \item Verificar si \(d^k\) es dirección de descenso.
+    \item Actualizar \(\beta_k\) y \(\sigma_k\) con criterio de región de confianza.
+    \item Hacer búsqueda lineal de Wolfe--Powell.
+    \item Actualizar \(u^{k+1}=u^k+a_kd^k\).
+\end{enumerate}
+\end{frame}
+
+% ============================================================
+% 26
+% ============================================================
+\begin{frame}{Convergencia global}
+\begin{block}{Resultado}
+Bajo las condiciones del algoritmo y usando búsqueda lineal de Wolfe--Powell,
+\[
+    \lim_{k\to\infty}\nabla f_\gamma(u^k)=0.
+\]
+\end{block}
+
+\begin{alertblock}{Interpretación}
+El algoritmo no necesariamente encuentra un mínimo global, porque el problema es no convexo, pero sí converge hacia un punto estacionario del problema Huberizado.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 27
+% ============================================================
+\begin{frame}{Convergencia local superlineal}
+\begin{block}{Resultado local}
+Si la sucesión converge a un punto estacionario adecuado y los elementos del B-Hessiano son definidos positivos, entonces:
+\[
+    \norm{u^{k+1}-u^*}=o\left(\norm{u^k-u^*}\right).
+\]
+\end{block}
+
+\begin{alertblock}{Idea central}
+La regularización \(R\) se apaga cerca de la solución:
+\[
+    \beta_k\to0.
+\]
+Así se recupera la velocidad rápida de Newton.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 28
+% ============================================================
+\begin{frame}{Resultados numéricos del paper}
+Los autores prueban el método en problemas de:
+\begin{itemize}
+    \item denoising,
+    \item deblurring,
+    \item comparación con TV convexa,
+    \item sensibilidad al valor inicial.
+\end{itemize}
+
+\begin{block}{Parámetros típicos reportados}
+En varios experimentos se usa, por ejemplo,
+\[
+    q=0.75, \qquad \mu=10^{-4}\alpha, \qquad \gamma=0.1.
+\]
+\end{block}
+\end{frame}
+
+% ============================================================
+% 29
+% ============================================================
+\begin{frame}{Plantilla para mostrar resultados visuales}
+\begin{columns}[T]
+\column{0.25\textwidth}
+\centering
+\fbox{\parbox[c][2.3cm][c]{0.85\linewidth}{\centering Original}}
+
+\column{0.25\textwidth}
+\centering
+\fbox{\parbox[c][2.3cm][c]{0.85\linewidth}{\centering Ruidosa}}
+
+\column{0.25\textwidth}
+\centering
+\fbox{\parbox[c][2.3cm][c]{0.85\linewidth}{\centering TV clásica}}
+
+\column{0.25\textwidth}
+\centering
+\fbox{\parbox[c][2.3cm][c]{0.85\linewidth}{\centering TV\(_q\)}}
+\end{columns}
+
+\vspace{0.4cm}
+\begin{alertblock}{Mensaje que se debe enfatizar}
+El modelo \(\TV_q\) tiende a preservar mejor los bordes y a promover mayor sparsity del gradiente que la TV convexa.
+\end{alertblock}
+\end{frame}
+
+% ============================================================
+% 30
+% ============================================================
+\begin{frame}{Conclusiones y bibliografía mínima}
+\begin{block}{Conclusiones}
+\begin{itemize}
+    \item \(\TV_q\), con \(0<q<1\), es una alternativa no convexa a la TV clásica.
+    \item La Huberización permite tratar numéricamente la no diferenciabilidad cerca de cero.
+    \item El método Newton primal-dual es estabilizado mediante regularización \(R\) y región de confianza.
+    \item El esquema combina convergencia global con convergencia local superlineal.
+    \item Para tesis sobre TV cuasinormada, este paper es una referencia central.
+\end{itemize}
+\end{block}
+
+\vspace{0.1cm}
+{\footnotesize
+\textbf{Referencia:} M. Hintermüller y T. Wu (2013). \emph{Nonconvex TVq-Models in Image Restoration: Analysis and a Trust-Region Regularization-Based Superlinearly Convergent Solver}. SIAM Journal on Imaging Sciences, 6(3), 1385--1415.
+}
+\end{frame}
+
+\end{document}
