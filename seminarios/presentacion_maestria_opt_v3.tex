@@ -121,50 +121,30 @@ Objetivo principal del artículo:
 \end{frame}
 
 %------------------------------------------------------
-\begin{frame}
-\begin{block}{Existencia de solución}
+\begin{frame}{Existencia de solución}
+\begin{block}{Teorema}
     Supongamos que $\mu\geq 0$, $\alpha>0$,$q>0$, $\lambda_{ij}>0$ para todo $(i,j)\in\Omega$ y 
     $$
     \mathrm{Ker}\nabla \cap \mathrm{Ker} K=\{0\}.
     $$
     Entonces existe un minimizador global para el problema variacional \eqref{pv}.
 \end{block}
-\end{frame}
 
-%-----------------------------------------------------
-\begin{frame}
-    Para asegurar la existencia de un mínimo a través del método directo del cálculo de variaciones, primero debemos demostrar la propiedad de coercividad:
-    \begin{block}{Definición de Coercividad}
-        Un funcional $f: \mathbb{R}^N \to \mathbb{R}$ es coercivo si satisface que $f(u) \to +\infty$ cuando $\|u\| \to \infty$.
-    \end{block}
-    \begin{itemize}
-        \item Debido a que $\mu > 0$, el término $\frac{\mu}{2}\|\nabla u\|_2^2$ provee un crecimiento cuadrático controlado en casi todas las direcciones del espacio.
-        \item La única zona crítica ocurre en el espacio nulo del operador gradiente ($\text{Ker}(\nabla)$), el cual corresponde al subespacio de las imágenes constantes.
-    \end{itemize}
-\end{frame}
-
-% Slide 9: Teorema de Existencia Global
-\begin{frame}{7. Teorema de Existencia de Solución (Teorema 2.1)}
-    \begin{theorem}
-        Supongamos que el operador de degradación lineal cumple con la condición de intersección vacía de núcleos: $\text{Ker}(\nabla) \cap \text{Ker}(K) = \{0\}$. Entonces, para cada dato $z$, el funcional $f(u)$ posee al menos un minimizador global $u^* \in \mathbb{R}^{|\Omega|}$.
-    \end{theorem}
-    \textbf{Esquema de la Demostración:}
+\textbf{Idea de la Demostración:}
     \begin{enumerate}
-        \item La condición implica que si $u$ es una constante no nula, entonces $Ku \neq 0$, garantizando que el término de fidelidad $\frac{\lambda}{2}\|Ku-z\|^2$ crezca de forma estricta.
-        \item Esto extiende la coercividad a todo el espacio vectorial euclidiano $\mathbb{R}^{|\Omega|}$.
-        \item Al ser $f(u)$ una función continua y coerciva acotada inferiormente por 0, el teorema de Weierstrass asegura la existencia del óptimo.
+        \item Dado que $f$ es acotada inferiormente, basta probar que $f$ es coerciva (tiende a $+\infty$ cuando $\|u\|$ tiende a $+\infty$), puesto que si $f$ es coerciva y continua, entonces existe un minimizador. 
+        \item La coercividad de $f$ se prueba por contradicción, de modo que se encuentra un elemento no nulo en la intersección de $\mathrm{Ker}(\nabla)$ y $\mathrm{Ker}(K)$. Como esto no es posible de acuerdo a la hipótesis, entonces $f$ es coerciva. 
     \end{enumerate}
 \end{frame}
 
-
 %-----------------------------------------------------
-\begin{frame}
+\begin{frame}{Existencia de solución}
     Para caracterizar la solución óptima $u$, se definen los conjuntos activo e inactivo de la siguiente forma:
     \begin{align*}
-        \mathcal{A}(u):=\{(i,j)\in \Omega:|(\nabla u)_{ij}|\neq 0\},
+        \mathcal{A}(u):=\{(i,j)\in \Omega:|(\nabla u)_{ij}|\neq 0\},\quad
         \mathcal{I}(u):=\Omega \setminus \mathcal{A}(u).
     \end{align*}
-   El término $TV^q$, ($\sum_{(i,j)}|(\nabla u)_{ij}|^q$), hace que la función objetivo $f$ sea no diferenciable en $\mathcal{I}(u)$. Por tanto la ecuación de Euler-Lagrange para caracterizar un punto estacionario se plantea como sigue 
+  Como $f$ es no diferenciable en $\mathcal{I}(u)$, la ecuación de Euler-Lagrange para caracterizar un punto estacionario se plantea como sigue 
     \begin{equation}
         \left\{\begin{array}{ll}
             -\mu\Delta u+K^T\lambda(Ku-z)+\alpha\nabla^T(|\nabla u|^{q-2}\nabla u)=0&\text{si}\;(i,j)\in\mathcal{A}(u)\\
@@ -177,27 +157,33 @@ Objetivo principal del artículo:
 
 
 % Slide 4: El Modelo ROF Convexo Clásico
-\begin{frame}{2. Regularización de Variación Total Convexa Clásica (TV)}
-    El enfoque estándar propuesto por Rudin, Osher y Fatemi (1992) penaliza la norma $\ell_1$ del gradiente:
-    \begin{equation}
-        \min_{u} \| \nabla u \|_1 + \frac{\lambda}{2} \|Ku - z\|_2^2
+\begin{frame}{Regularización del término $TV^q$}
+   Regularización mediante una función de Huber $\varphi_\gamma$:
+   \begin{equation}
+        \varphi_\gamma(s) = 
+        \begin{cases} 
+            \frac{1}{q} |s|^q - \left(\frac{1}{q} - \frac{1}{2}\right)\gamma^q & \text{si } |s| > \gamma \\ 
+            \frac{1}{2} \gamma^{q-2} |s|^2 & \text{si } |s| \le \gamma, 
+        \end{cases}
     \end{equation}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \textbf{Ventajas:}
-            \begin{itemize}
-                \item El problema es estrictamente convexo si $\text{Ker}(K) \cap \text{Ker}(\nabla) = \{0\}$.
-                \item Los óptimos locales son óptimos globales uniformes.
-            \end{itemize}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \textbf{Desventajas Críticas:}
-            \begin{itemize}
-                \item \alert{Efecto Staircasing:} Transforma gradientes suaves en bloques artificiales constantes.
-                \item Produce un subestimación sistemática de los contrastes y pérdidas en estructuras finas.
-            \end{itemize}
-        \end{column}
-    \end{columns}
+    con $\gamma>0$ pequeño.
+\end{frame}
+
+%---------------------------------------------
+\begin{frame}{Regularización del término $TV^q$}
+    De este modo obtenemos el problema regularizado que aproxima al problema original, dado de la siguiente forma 
+    $$
+    \min_{u\in\mathbb{R}^{|\Omega|}}f_{\gamma}(u):=\sum_{(i,j)\in \Omega}\left(\frac{\mu}{2}|(\nabla u)_{ij}|^2+\alpha\varphi_\gamma(|(\nabla u)_{ij}|)+\frac{\lambda_{ij}}{2}|(Ku-z)_{ij}|^2\right).
+    $$
+    Dado que $f_\gamma$ es continuamente diferenciable, la ecuación de Euler-Lagrange está dada por 
+    $$
+    \nabla f_\gamma(u)=-\mu\Delta u+\mathbb{K}^T\lambda(Ku-z)+\alpha \nabla^T(\max(|\nabla u|,\gamma)^{q-2}\nabla)
+    $$
+    ¿Qué sucede si $\gamma\to 0^+$?
+    \begin{theorem}[Consistencia]
+        Sea $\{\gamma_k\}_{k=1}^\infty$ una sucesión de parámetros positivos tales que $\lim_{k\to\infty} \gamma_k = 0$, y sea $u^k$ un punto estacionario de $f_{\gamma_k}$. Entonces, toda secuencia acumulativa o punto límite $u^*$ de la sucesión $\{u^k\}$ es un punto estacionario legítimo del funcional original $f(u)$.
+    \end{theorem}
+    Esto justifica matemáticamente resolver el problema aproximado mediante una estrategia de continuación numérica reduciendo el valor de $\gamma$.
 \end{frame}
 
 % Slide 5: El Salto a la No Convexidad (lq)
@@ -210,54 +196,6 @@ Objetivo principal del artículo:
     \end{itemize}
 \end{frame}
 
-% Slide 6: El Funcional Propuesto TVq
-\begin{frame}{4. Planteamiento Formal del Funcional Matemático $TV^q$}
-    Hintermüller y Wu proponen la minimización del siguiente funcional de energía en un dominio discreto bidimensional estructurado $\Omega$:
-    \begin{equation}
-        \min_{u \in \mathbb{R}^{|\Omega|}} f(u) := \sum_{(i,j) \in \Omega} \left[ \frac{\mu}{2} |(\nabla u)_{ij}|^2 + \frac{\alpha}{q} |(\nabla u)_{ij}|^q + \frac{\lambda_{ij}}{2} |(Ku - z)_{ij}|^2 \right]
-    \end{equation}
-    Donde los operadores se definen localmente como:
-    \begin{itemize}
-        \item $(\nabla u)_{ij} = ((\nabla_x u)_{ij}, (\nabla_y u)_{ij})^\top \in \mathbb{R}^2$ representa el gradiente discreto por diferencias hacia adelante.
-        \item $|(\nabla u)_{ij}| = \sqrt{((\nabla_x u)_{ij})^2 + ((\nabla_y u)_{ij})^2}$ denota la magnitud euclidiana estándar del gradiente espacial.
-    \end{itemize}
-\end{frame}
-
-% Slide 7: Parámetros del Modelo Variacional
-\begin{frame}{5. Rol Técnico de cada Parámetro Estructural}
-    \begin{itemize}
-        \item \textbf{Término Cuadrático Auxiliar ($\mu > 0$):} Un factor de regularización estrictamente elíptico. Aunque $0 < \mu \ll \alpha$, su presencia garantiza que el funcional sea fuertemente coercivo y tenga derivadas acotadas en el infinito.
-        \item \textbf{Coeficiente de Regularización ($\alpha > 0$):} Controla el balance general entre el suavizado por tramos y la fidelidad de los datos numéricos.
-        \item \textbf{Ponderación de Datos Local ($\lambda_{ij} > 0$):} Permite adaptar la tolerancia al ruido según la región de la imagen (por ejemplo, máscaras de ruido segmentadas).
-    \end{itemize}
-\end{frame}
-
-\section{Parte II: Análisis Matemático de Existencia y Regularidad}
-
-% Slide 8: Coercividad del Funcional f(u)
-\begin{frame}{6. Coercividad del Funcional en el Espacio Discreto}
-    Para asegurar la existencia de un mínimo a través del método directo del cálculo de variaciones, primero debemos demostrar la propiedad de coercividad:
-    \begin{block}{Definición de Coercividad}
-        Un funcional $f: \mathbb{R}^N \to \mathbb{R}$ es coercivo si satisface que $f(u) \to +\infty$ cuando $\|u\| \to \infty$.
-    \end{block}
-    \begin{itemize}
-        \item Debido a que $\mu > 0$, el término $\frac{\mu}{2}\|\nabla u\|_2^2$ provee un crecimiento cuadrático controlado en casi todas las direcciones del espacio.
-        \item La única zona crítica ocurre en el espacio nulo del operador gradiente ($\text{Ker}(\nabla)$), el cual corresponde al subespacio de las imágenes constantes.
-    \end{itemize}
-\end{frame}
-
-% Slide 9: Teorema de Existencia Global
-\begin{frame}{7. Teorema de Existencia de Solución (Teorema 2.1)}
-    \begin{theorem}
-        Supongamos que el operador de degradación lineal cumple con la condición de intersección vacía de núcleos: $\text{Ker}(\nabla) \cap \text{Ker}(K) = \{0\}$. Entonces, para cada dato $z$, el funcional $f(u)$ posee al menos un minimizador global $u^* \in \mathbb{R}^{|\Omega|}$.
-    \end{theorem}
-    \textbf{Esquema de la Demostración:}
-    \begin{enumerate}
-        \item La condición implica que si $u$ es una constante no nula, entonces $Ku \neq 0$, garantizando que el término de fidelidad $\frac{\lambda}{2}\|Ku-z\|^2$ crezca de forma estricta.
-        \item Esto extiende la coercividad a todo el espacio vectorial euclidiano $\mathbb{R}^{|\Omega|}$.
-        \item Al ser $f(u)$ una función continua y coerciva acotada inferiormente por 0, el teorema de Weierstrass asegura la existencia del óptimo.
-    \end{enumerate}
-\end{frame}
 
 % Slide 10: La Patología de la No Suavidad
 \begin{frame}{8. El Problema Analítico de la No Suavidad en el Origen}
