@@ -113,7 +113,7 @@ Objetivo principal del artículo:
     donde:
     \begin{itemize}
         \item $\Omega$ representa el dominio de la imagen y $|\Omega|$ denota su cardinalidad.
-        \item $\alpha>0, 0<q<1, 0<\mu\ll \alpha$ son los parámetros del modelo. 
+        \item $\alpha>0$, $q\in (0,1)$, $0<\mu\ll \alpha$ son los parámetros del modelo. 
         \item El vector $z \in \mathbb{R}^{|\Omega|}$ representa la imagen dañada, mientras que $u\in\mathbb{R}^{|\Omega|}$ es la imagen reconstruida.
         \item $K \in \mathbb{R}^{|\Omega| \times |\Omega|}$ es una matriz que no anula al vector constante (por ejemplo, la matriz de desenfoque). $|(\nabla u)_{ij}|$ corresponde a la norma euclidiana de $(\nabla u)_{ij}\in \mathbb{R}^2.$
         \item $\lambda_{ij}>0\in \mathbb{R}^{|\Omega|}$ es el coeficiente de fidelidad y $\nabla$ es el operador gradiente discreto $\nabla=(\nabla_x\;\nabla_y).$
@@ -132,8 +132,7 @@ Objetivo principal del artículo:
 \end{frame}
 
 %-----------------------------------------------------
-% Slide 8: Coercividad del Funcional f(u)
-\begin{frame}{6. Coercividad del Funcional en el Espacio Discreto}
+\begin{frame}
     Para asegurar la existencia de un mínimo a través del método directo del cálculo de variaciones, primero debemos demostrar la propiedad de coercividad:
     \begin{block}{Definición de Coercividad}
         Un funcional $f: \mathbb{R}^N \to \mathbb{R}$ es coercivo si satisface que $f(u) \to +\infty$ cuando $\|u\| \to \infty$.
