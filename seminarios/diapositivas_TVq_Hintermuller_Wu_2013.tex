@@ -11,6 +11,8 @@
 \usepackage{booktabs}
 \usepackage{tikz}
 \usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{caption}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 
@@ -53,20 +55,8 @@
 \begin{document}
 
 % ============================================================
-% 1
-% ============================================================
 \begin{frame}
     \titlepage
-\end{frame}
-
-\begin{frame}{Esquema de la presentación}
-    \begin{itemize}
-    \item Motivación del modelo \(\TV_q\), con \(0<q<1\).
-    \item Planteamiento del modelo variacional no convexo.
-    \item Regularización tipo Huber del término no diferenciable.
-    \item Método Newton primal-dual regularizado.
-    \item Resultados teóricos y numéricos.
-\end{itemize}
 \end{frame}
 % ============================================================
 \begin{frame}{Introducción}
@@ -84,6 +74,7 @@
     \item \(z\in\R^{|\Omega|}\): datos observados.
     \item \(K\in\R^{|\Omega|\times |\Omega|}\): operador de degradación.
     \item \(\nabla u = (\nabla_x u,\nabla_y u)\): gradiente discreto.
+    \item $\Delta=-\nabla_x^T\nabla_x-\nabla_y^T\nabla_y:$ Laplaciano discreto.
     \item \(\lambda_{ij}>0\): coeficiente de fidelidad.
 \end{itemize}
 
@@ -98,7 +89,7 @@
 % 9
 % ============================================================
 \begin{frame}{Modelo variacional \(\TV_q\)}
-El problema principal en el caso discreto es:
+El problema es:
 \begin{equation}
  \min_{u\in\R^{|\Omega|}} f(u):=
 \sum_{(i,j)\in\Omega}
@@ -146,7 +137,7 @@ Aporta suavidad y estabilidad adicional.
     $$
     \mathrm{Ker}\nabla \cap \mathrm{Ker} K=\{0\}.
     $$
-    Entonces existe un minimizador global para el problema variacional \eqref{pv}.
+    Entonces existe un minimizador global para el problema variacional \eqref{2.1pv}.
 \end{block}
 
 \textbf{Idea de la Demostración:}
@@ -209,7 +200,7 @@ Aporta suavidad y estabilidad adicional.
     \end{equation}
     Dado que $f_\gamma$ es continuamente diferenciable, la ecuación de Euler-Lagrange (condición de primer orden del problema regularizado) está dada por 
     \begin{equation}
-     \nabla f_\gamma(u)=-\mu\Delta u+\mathbb{K}^T\lambda(Ku-z)+\alpha \nabla^T(\max(|\nabla u|,\gamma)^{q-2}\nabla u)
+     \nabla f_\gamma(u)=-\mu\Delta u+\mathbb{K}^T\lambda(Ku-z)+\alpha \nabla^T(\max(|\nabla u|,\gamma)^{q-2}\nabla u)=0.
    \label{2.5} 
     \end{equation}
     \vspace{-0.4cm}
@@ -221,7 +212,7 @@ La función \(\max(|\nabla u|,\gamma)\) evita dividir por cantidades cercanas a 
 \begin{frame}{Regularización del término $TV^q$}
     ¿Qué sucede si $\gamma\to 0^+$?
     \begin{block}{Teorema 2}
-        Sean válidos los supuestos del Teorema 1. Además supongamos que $(u^k)$ es una sucesión uniformemente acotada, donde cada $u^k$ es un punto estacionario del problema \eqref{2.4} que satisface \eqref{2.5}. Entonces cuando $\gamma\to 0^+$, existe una subsucesión de $(u^k)$ que converge a algún $u^*\in \mathbb{R}^|\Omega|$, el cual satisface la ecuación de Euler-Lagrange original \eqref{2.3}
+        Sean válidos los supuestos del Teorema 1. Además supongamos que $(u^k)$ es una sucesión uniformemente acotada, donde cada $u^k$ es un punto estacionario del problema \eqref{2.4} que satisface \eqref{2.5}. Entonces cuando $\gamma\to 0^+$, existe una subsucesión de $(u^k)$ que converge a algún $u^*\in \mathbb{R}^|\Omega|$, el cual satisface la ecuación de Euler-Lagrange original \eqref{2.3}.
     \end{block}
 \end{frame}
 % ============================================================
@@ -324,8 +315,9 @@ En este paper, ya que \(0<q<1\):
 \begin{frame}{Regularización \(R\)}
 La reponderación se interpreta como una regularización del Hessiano, denominada $R$-regularización, de modo que el sistema de Newton se escribe 
 \[
-    (H_k+\beta_k R_k)\delta u^{k+1}=-g^k.
+    (H^k+\beta^k R^k)\delta u^{k+1}=-g^k,
 \]
+donde $H^k:=\tilde{H}^k(2-q)$ es el B-Hessiano en el método de Newton primal-dual sin reponderación, $\beta=\beta^k=2-q-r$ y $r$ el parámetro de ponderación. 
 
 \begin{block}{Rol de \(\beta_k\)}
 \begin{itemize}
@@ -340,15 +332,20 @@ La reponderación se interpreta como una regularización del Hessiano, denominad
 % 24
 % ============================================================
 \begin{frame}{Región de confianza}
-La versión $R$-regularizada del método de Newton generalizado con $\beta$ fijo es linealmente convergente. Sin embargo, se propone una nueva versión adaptativamente $R$-regularizada del método de Newton generalizado que alcanza convergencia local superlineal. Para ello se requiere una estrategia de actualización adecuada para $\beta>0$. Por lo que se propone un esquema de tipo región de confianza. Dado un $u^k$, se modela a $f_\gamma$ localmente mediante una función cuadrática $h:\mathbb{R}^|\Omega|\to\mathbb{R}$ con
+La versión $R$-regularizada del método de Newton generalizado con $\beta$ fijo es linealmente convergente. \vspace{0.15cm}
+
+Sin embargo, se propone una nueva versión adaptativamente $R$-regularizada del método de Newton generalizado que alcanza convergencia local superlineal. \vspace{0.15cm}
+
+Para ello se requiere una estrategia de actualización adecuada para $\beta>0$. Por lo que se propone un esquema de tipo región de confianza. Dado un $u^k$, se modela a $f_\gamma$ localmente mediante una función cuadrática $h:\mathbb{R}^{|\Omega|}\to\mathbb{R}$ con
 \[
     h^k(d)=f_\gamma(u^k)+(g^k)^\top d+\frac12 d^\top H_+^kd.
 \]
 
-La dirección se controla mediante una restricción tipo región de confianza:
+La dirección $d$ es tal que 
 \[
-    \frac12 d^\top R_{k,\varepsilon}^+d\leq \frac12\sigma_k^2.
+    \frac12 d^\top R_{+,\epsilon}^kd\leq \frac12\sigma_k^2,
 \]
+donde $R_+$ es una versión simetrizada del operador de regularización $R^k$, $R_{+,\epsilon}^k:=R_+^k+\epsilon I$, con un parámetro arbitrario de regularización fijo $0<\epsilon\ll \alpha$ y $\sigma^k>0$ representa el radio de la región de confianza. 
 \end{frame}
 
 % ============================================================
@@ -381,7 +378,7 @@ La dirección se controla mediante una restricción tipo región de confianza:
             \Else \ $\sigma^{k+1} := \sigma^k$.
             \EndIf
             \State Determine step size $a^k$ along $d^k$ such that $u^{k+1} = u^k + a^k d^k$ satisfies the Wolfe–Powell conditions:
-            \Statex \hspace{\algorithmicindent} (3.35) $f_\gamma(u^{k+1}) \le f_\gamma(u^k) + \tau_1 a^k \nabla f_\gamma(u^k)^\top d^k$ \ \textbf{and} \ (3.36) $\nabla f_\gamma(u^{k+1})^\top d^k \ge \tau_2 \nabla f_\gamma(u^k)^\top d^k$.
+            \Statex \hspace{\algorithmicindent} (WP1) $f_\gamma(u^{k+1}) \le f_\gamma(u^k) + \tau_1 a^k \nabla f_\gamma(u^k)^\top d^k$ \ \textbf{and} \ (WP2) $\nabla f_\gamma(u^{k+1})^\top d^k \ge \tau_2 \nabla f_\gamma(u^k)^\top d^k$.
             \State Set $\delta u^{k+1} := d^k$ and compute $\delta\vec{p}^{k+1}$ via (3.9). Update $u^{k+1} := u^k + a^k \delta u^{k+1}$ and $\vec{p}^{k+1} := \vec{p}^k + a^k \delta\vec{p}^{k+1}$.
             \State Set $\beta^{k+1} := \beta^k$ and $k := k + 1$.
         \Until{the stopping criterion for the outer loop is fulfilled.}
@@ -389,8 +386,8 @@ La dirección se controla mediante una restricción tipo región de confianza:
 \end{frame}
 % ============================================================
 \begin{frame}{Convergencia global}
-\begin{block}{Resultado}
-Bajo las condiciones del algoritmo y usando búsqueda lineal de Wolfe--Powell,
+\begin{block}{Teorema (Convergencia global)}
+Sea $u^{k+1}=u^k+a^kd^k$ tal que las condiciones de Wolfe-Powell (WP1) y (WP2) se satisfacen. Entonces 
 \[
     \lim_{k\to\infty}\nabla \|f_\gamma(u^k)\|=0.
 \]
@@ -403,26 +400,32 @@ El algoritmo no necesariamente encuentra un mínimo global, porque el problema e
 
 % ============================================================
 \begin{frame}{Convergencia local superlineal}
-\begin{block}{Resultado local}
-Si la sucesión converge a un punto estacionario adecuado y los elementos del B-Hessiano son definidos positivos, entonces:
-\[
-    \norm{u^{k+1}-u^*}=o\left(\norm{u^k-u^*}\right).
-\]
+\begin{block}{Teorema (Convergencia local)}
+Sea $(d^k)$ generada por el Algoritmo, y sea la sucesión $(u^k,\vec{p}^k)$ convergente a algún $(u^*,\vec{p}^*)$ que satisface el sistema de Euler-Lagrange \eqref{2.8}. Supongamos que todos los elementos en $\partial_{B}^2f_\gamma(u^*)$ son estrictamente definidos positivos. Entonces el Algoritmo es localmente superlinealmente convergente, es decir, para $k$ suficientemente grande tenemos que 
+$$
+    \norm{u^{k+1}-u^*}=o\left(\norm{u^k-u^*}\right)\qquad\text{para}\;k\to\infty.
+$$
 \end{block}
 
+\begin{block}{Notación}
+$\partial_B^2 f_\gamma(u)$ es el conjunto formado por todas las matrices en $\mathbb{R}^{|\Omega|\times|\Omega|}$ que son límites de sucesiones de la forma $\nabla^2 f_\gamma(u^k)$ con $u^k\to u$ y $\nabla f_\gamma$ diferenciable en $u^k$, es decir, 
+   $$ \partial_B^2f_\gamma(u):=\{\lim \nabla^2f_\gamma(u^k):u^k\to u, \nabla f_\gamma\;\text{es diferenciable en}\;u^k\}.$$
+
+Además, $\nabla_B^2f_\gamma(u)$ corresponde al B-Hessiano de $f$ en $u$. 
+\end{block}
 \end{frame}
 
 % ============================================================
 \begin{frame}{Experimentación numérica}
-Los autores muestran los resultados obtenidos con su método de Newton primal-dual. $\Omega$ denota el dominio de píxeles de tamaño $m \times n$, es decir, 
+Los autores muestran los resultados obtenidos con su método de Newton primal-dual. En los cuales $\Omega$ denota el dominio de píxeles de tamaño $m \times n$, es decir, 
 \[
 \Omega = \{(i,j) \in \mathbb{Z}^2 : 1 \le i \le m, \, 1 \le j \le n\}.
 \]
-Se discretiza el operador gradiente mediante 
+Además, se discretiza el operador gradiente mediante 
 \[
 (\nabla u)_{i,j} = \left( \frac{u_{i+1,j} - u_{i,j}}{\omega}, \, \frac{u_{i,j+1} - u_{i,j}}{\omega} \right)
 \]
-con $\omega = \sqrt{1/|\Omega|}$. Se fija $u_{i,j} = 0$ siempre que $(i,j) \notin \Omega$. A menos que se especifique lo contrario y se utilizan los siguientes parámetros: $q = 0.75$, $\mu = 10^{-4}\alpha$, $\gamma = 0.1$.
+con $\omega = \sqrt{1/|\Omega|}$. Se fija $u_{i,j} = 0$ siempre que $(i,j) \notin \Omega$. A menos que se especifique lo contrario.
 \end{frame}
 
 % ============================================================
@@ -460,6 +463,13 @@ PSNR                     & 25.3644 & 29.7011 & 30.12 & 30.1489 & 30.1489 \\ \hli
 \end{block}
 \end{frame}
 % ============================================================
+\begin{frame}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.5]{imag_maq/circ.png}
+    \end{figure}
+\end{frame}
+% =================================
 \begin{frame}{Experimentación numérica}
 \textbf{Imagen Shepp-Logan phantom} En este experimento el tamaño de la imagen es de $256\times 256$ píxeles, la imagen original se contamina con ruido gaussiano de media cero y desviación estándar 0.05. Para este ejemplo $\mu=0$. En este experimento se resuelve el problema para $q=1,0.75, 0.5$ y $0.25$. Para cada $q$, el parámetro $\alpha$ se escoge manualmente de modo que se obtenga el mejor valor de PSNR.
 \vspace{0.5cm}
@@ -501,46 +511,16 @@ $q$  & PSNR & $|\mathcal{A}_\gamma(\hat{u}_q)|/|\Omega|$ & $f_{\gamma,q}(\hat{u}
     \end{itemize}
 \end{block}
 \end{frame}
-
-% ============================================================
-\begin{frame}{Experimentación numérica}
-Además se considera lo siguiente:
-\begin{itemize}
-    \item El subproblema de región de confianza (3.18)--(3.19) se resuelve solo de forma aproximada. De hecho, a partir de su experiencia numérica, una sola iteración interna parece ser suficiente en la práctica para el Algoritmo 3.6. El bucle externo se finaliza una vez que la norma del residuo $\|\nabla f_\gamma(u^k)\|$ (ver fórmula (2.5)) se ha reducido en un factor de $10^{-7}$.
-    \item En el paso 5 del Algoritmo 3.6, se requiere resolver un sistema de Newton $R$-regularizado. En un problema de eliminación de ruido (es decir, cuando $K = I$), el sistema lineal se puede resolver eficientemente mediante una factorización de Cholesky dispersa. Para problemas donde $K$ es una matriz densa o ni siquiera se formula explícitamente como una matriz, utilizamos el método del gradiente conjugado con una tolerancia del residuo de $0.05$.
-    \item Todos los experimentos se realizaron bajo MATLAB R2009b en una laptop Intel Core de 2.66 GHz con 4 GB de memoria RAM. 
-\end{itemize}
+% =================================
+\begin{frame}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.5]{imag_maq/phan.png}
+    \end{figure}
 \end{frame}
 
-% ============================================================
-% 29
-% ============================================================
-\begin{frame}{Plantilla para mostrar resultados visuales}
-\begin{columns}[T]
-\column{0.25\textwidth}
-\centering
-\fbox{\parbox[c][2.3cm][c]{0.85\linewidth}{\centering Original}}
-
-\column{0.25\textwidth}
-\centering
-\fbox{\parbox[c][2.3cm][c]{0.85\linewidth}{\centering Ruidosa}}
-
-\column{0.25\textwidth}
-\centering
-\fbox{\parbox[c][2.3cm][c]{0.85\linewidth}{\centering TV clásica}}
-
-\column{0.25\textwidth}
-\centering
-\fbox{\parbox[c][2.3cm][c]{0.85\linewidth}{\centering TV\(_q\)}}
-\end{columns}
-
-\vspace{0.4cm}
-\begin{alertblock}{Mensaje que se debe enfatizar}
-El modelo \(\TV_q\) tiende a preservar mejor los bordes y a promover mayor sparsity del gradiente que la TV convexa.
-\end{alertblock}
-\end{frame}
-% ============================================================
-\begin{frame}{Contribución del paper}
+% =================================
+\begin{frame}{Resumen de resultados}
 \begin{enumerate}
     \item Introduce un modelo \(\TV_q\) no convexo para restauración de imágenes.
     \item Prueba existencia de minimizador en el caso discreto.
@@ -549,34 +529,9 @@ El modelo \(\TV_q\) tiende a preservar mejor los bordes y a promover mayor spars
     \item Usa regularización basada en región de confianza para tratar Hessianos indefinidos.
     \item Demuestra convergencia global y convergencia local superlineal hacia puntos estacionarios del problema regularizado.
 \end{enumerate}
-\end{frame}
-
-\begin{frame}{3. Motivación de la Regularización No Convexa $\ell_q$}
-    Para evitar el \textit{staircasing}, la literatura moderna recurre a las pseudo-normas $\ell_q$ con $0 < q < 1$:
-    \begin{itemize}
-        \item \textbf{Sparsity:} La penalización $|x|^q$ para $q < 1$ se aproxima fuertemente a la norma $\ell_0$ (recuperación exacta de bordes).
-        \item \textbf{Preservación de Discontinuidades:} Castiga menos los saltos grandes y penaliza fuertemente las variaciones pequeñas cerca del origen.
-        \item \textbf{Precisión Matemática:} El modelo se adapta mejor a las estadísticas estadísticas reales de las imágenes naturales (distribuciones de cola pesada).
-    \end{itemize}
-\end{frame}
-% ============================================================
-% 30
-% ============================================================
-\begin{frame}{Conclusiones y bibliografía mínima}
-\begin{block}{Conclusiones}
-\begin{itemize}
-    \item \(\TV_q\), con \(0<q<1\), es una alternativa no convexa a la TV clásica.
-    \item La Huberización permite tratar numéricamente la no diferenciabilidad cerca de cero.
-    \item El método Newton primal-dual es estabilizado mediante regularización \(R\) y región de confianza.
-    \item El esquema combina convergencia global con convergencia local superlineal.
-    \item Para tesis sobre TV cuasinormada, este paper es una referencia central.
-\end{itemize}
-\end{block}
-
-\vspace{0.1cm}
+\vspace{1cm}
 {\footnotesize
-\textbf{Referencia:} M. Hintermüller y T. Wu (2013). \emph{Nonconvex TVq-Models in Image Restoration: Analysis and a Trust-Region Regularization-Based Superlinearly Convergent Solver}. SIAM Journal on Imaging Sciences, 6(3), 1385--1415.
+M. Hintermüller y T. Wu (2013). \emph{Nonconvex TVq-Models in Image Restoration: Analysis and a Trust-Region Regularization-Based Superlinearly Convergent Solver}. SIAM Journal on Imaging Sciences, 6(3), 1385--1415.
 }
 \end{frame}
-
 \end{document}
