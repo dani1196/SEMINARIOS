@@ -59,6 +59,13 @@
     \titlepage
 \end{frame}
 % ============================================================
+\begin{frame}{Motivación}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.5]{imag_maq/phan.png}
+    \end{figure}
+\end{frame}
+% ============================================================
 \begin{frame}{Introducción}
     Objetivo principal del artículo:
 \begin{enumerate}
@@ -166,7 +173,7 @@ Aporta suavidad y estabilidad adicional.
 \end{frame}
 
 % ============================================================
-\begin{frame}{Regularización del término $TV^q$}
+\begin{frame}{Regularización del término $TVq$}
   \begin{columns}[c] % El parámetro [c] centra verticalmente el contenido de las columnas
         
         % Primera columna: Texto y Ecuación
@@ -192,7 +199,7 @@ Aporta suavidad y estabilidad adicional.
     \end{columns}
 \end{frame}
 % ============================================================
-\begin{frame}{Regularización del término $TV^q$}
+\begin{frame}{Regularización del término $TVq$}
     De este modo obtenemos el problema regularizado que aproxima al problema original, dado de la siguiente forma 
     \begin{equation}
     \min_{u\in\mathbb{R}^{|\Omega|}}f_{\gamma}(u):=\sum_{(i,j)\in \Omega}\left(\frac{\mu}{2}|(\nabla u)_{ij}|^2+\alpha\varphi_\gamma(|(\nabla u)_{ij}|)+\frac{\lambda_{ij}}{2}|(Ku-z)_{ij}|^2\right).
@@ -209,7 +216,7 @@ La función \(\max(|\nabla u|,\gamma)\) evita dividir por cantidades cercanas a 
 \end{alertblock}
 \end{frame}
 % ============================================================
-\begin{frame}{Regularización del término $TV^q$}
+\begin{frame}{Regularización del término $TVq$}
     ¿Qué sucede si $\gamma\to 0^+$?
     \begin{block}{Teorema 2}
         Sean válidos los supuestos del Teorema 1. Además supongamos que $(u^k)$ es una sucesión uniformemente acotada, donde cada $u^k$ es un punto estacionario del problema \eqref{2.4} que satisface \eqref{2.5}. Entonces cuando $\gamma\to 0^+$, existe una subsucesión de $(u^k)$ que converge a algún $u^*\in \mathbb{R}^|\Omega|$, el cual satisface la ecuación de Euler-Lagrange original \eqref{2.3}.
@@ -253,10 +260,10 @@ Combinar Newton semismooth con repoderación y regularización tipo región de c
 \begin{frame}{Reponderación de la ecuación de Euler-Lagrange}
 Dado \(u^k\), se define el peso como 
 \[
-    w^k=(\max(|\nabla u^k|,\gamma)^{q+r-2}, \qquad 0\leq r\leq 2-q.
+    w^k=(\max(|\nabla u^k|,\gamma)^{q+r-2}, \qquad 0\leq r\leq 2-q,
 \]
 
-La ecuación reponderada queda:
+con $r$ el parámetro de ponderación. La ecuación reponderada queda:
 \[
 -\mu\Delta u + K^\top\lambda(Ku-z)
 +\alpha\nabla^\top\left(w^k\max(|\nabla u|,\gamma)^{-r}\nabla u\right)=0.
@@ -317,7 +324,7 @@ La reponderación se interpreta como una regularización del Hessiano, denominad
 \[
     (H^k+\beta^k R^k)\delta u^{k+1}=-g^k,
 \]
-donde $H^k:=\tilde{H}^k(2-q)$ es el B-Hessiano en el método de Newton primal-dual sin reponderación, $\beta=\beta^k=2-q-r$ y $r$ el parámetro de ponderación. 
+donde $H^k:=\tilde{H}^k(2-q)$ es el B-Hessiano en el método de Newton primal-dual sin reponderación, $\beta=\beta^k=2-q-r$.
 
 \begin{block}{Rol de \(\beta_k\)}
 \begin{itemize}
@@ -349,7 +356,7 @@ donde $R_+$ es una versión simetrizada del operador de regularización $R^k$, $
 \end{frame}
 
 % ============================================================
-\begin{frame}{Algoritmo 3.6: Método de Newton adaptativamente regularizado}
+\begin{frame}{Algoritmo: Método de Newton adaptativamente regularizado}
     % Reducimos la fuente al mínimo legible para proyección e ignoramos espaciados verticales extras
     \tiny
     \setlength{\leftmargini}{0.5cm}
@@ -365,7 +372,8 @@ donde $R_+$ es una versión simetrizada del operador de regularización $R^k$, $
             \State Generate $H^k_+$, $R^k_{+,\varepsilon}$, and $g^k$.
             \Repeat \text{ \{inner loop\}}
                 \State Solve $(H^k_+ + \beta^k R^k_{+,\varepsilon})d^k = -g^k$ for $d^k$.
-                \If{$-(g^k)^\top d^k / (\|g^k\| \|d^k\|) < \epsilon_d$} \ Set $\beta^k := \beta_{\max}$ and return to step 5. \EndIf
+                \If{$-(g^k)^\top d^k / (\|g^k\| \|d^k\|) < \epsilon_d$} \
+                \State Set $\beta^k := \beta_{\max}$ and return to step 5. \EndIf
                 \If{$\beta^k = \beta_{\max}$ \textbf{and} $(d^k)^\top R^k_{+,\varepsilon}d^k > (\sigma^k)^2$}
                     \State Set $\sigma^k := \sqrt{(d^k)^\top R^k_{+,\varepsilon}d^k}$ and go to step 15.
                 \EndIf
@@ -389,7 +397,7 @@ donde $R_+$ es una versión simetrizada del operador de regularización $R^k$, $
 \begin{block}{Teorema (Convergencia global)}
 Sea $u^{k+1}=u^k+a^kd^k$ tal que las condiciones de Wolfe-Powell (WP1) y (WP2) se satisfacen. Entonces 
 \[
-    \lim_{k\to\infty}\nabla \|f_\gamma(u^k)\|=0.
+    \lim_{k\to\infty}\|\nabla f_\gamma(u^k)\|=0.
 \]
 \end{block}
 
